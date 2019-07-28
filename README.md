@@ -12,6 +12,7 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 ## Features
 * Automatic team management 
 * Dynamic round time
+* Add custom spawn points to maps
 * Supported maps (confirmed): CP,CTF,PL
 * Supported maps (unconfirmed): SD,TC,KOTH
 * Unsupported Maps: MVM,ARENA,TRAINING,RD
