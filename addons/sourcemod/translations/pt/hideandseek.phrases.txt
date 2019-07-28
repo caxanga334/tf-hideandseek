@@ -1,0 +1,112 @@
+"Phrases"
+{
+	"Camper Killed"
+	{
+		"pt"	"{red}Você foi morto por camperar dentro da sala de spawn."
+	}
+	"Camper Warning"
+	{
+		"pt"	"{red}Você será morto se não sair da sala de spawn."
+	}
+	"Round Start"
+	{
+		"#format"	"{1:d}"
+		"pt"	"{aqua}A partida começou! A duração da partida é de {green}{1} {aqua}segundos."
+	}
+	"Cannot Join"
+	{
+		"pt"	"{aqua}Você não pode entrar na equipe RED enquanto a partida está em progresso."
+	}
+	"Win By Time"
+	{
+		"pt"	"{aqua}A equipe RED ganhou porque o tempo da partida acabou."
+	}
+	"Round MVP"
+	{
+		"#format"	"{1:s},{2:d}"
+		"pt"	"{aqua}O melhor jogador do BLU é {green}{1}{aqua} com {green}{2}{aqua} vítimas."
+	}
+	"Round Time"
+	{
+		"#format"	"{1:d}"
+		"pt"	"{aqua}Tempo restante da partida: {1} segundos."
+	}
+	"You Hide"
+	{
+		"pt"	"{red}Você esta se escondendo, jogadores da equipe BLU tentarão te matar!"
+	}
+	"You Seek"
+	{
+		"pt"	"{blue}Você esta procurando, vá caçar a equipe RED!"
+	}
+	"Moved"
+	{
+		"pt"	"{aqua}Você foi movido para a equipe BLU porque estava vazia."
+	}
+	"Selected BLU"
+	{
+		"pt"	"{green}Você foi selecionado para iniciar na {blue}equipe BLU{green}."
+	}
+	"Plugin By"
+	{
+		"pt"	"{aqua}TF2 Hide and Seek feito por Anonymous Player"
+	}
+	"Plugin Version"
+	{
+		"#format"	"{1:s},{2:s}"
+		"pt"	"{aqua}Você está jogando Hide and Seek versão {1} {2}"
+	}
+	"BLU Frozen"
+	{
+		"#format"	"{1:d}"
+		"pt"	"{mintcream}Você está congelado por {1} segundos."		
+	}
+	"Unfrozen"
+	{
+		"pt"	"{mintcream}Você foi descongelado."
+	}
+	// advertisements
+	"AD1"
+	{
+		"pt"	"{cyan}Digite {green}!rtl{cyan} para ver quanto tempo falta para acabar a partida."
+	}
+	"AD2"
+	{
+		"pt"	"{cyan}Digite {green}!hasrules{cyan} para ver as regras do Hide and Seek."
+	}	
+	// game rules
+	"GRT"
+	{
+		"pt"	"{cyan}Regras de Hide and Seek:"
+	}
+	"GRL1"
+	{
+		"pt"	"{cyan}A equipe {red}RED{cyan} tem que sobrevivor até a partida acabar."
+	}
+	"GRL2"
+	{
+		"pt"	"{cyan}Jogadores do {red}RED{cyan} serão movidos para o {blue}BLU{cyan} quando mortos."
+	}
+	"GRL3"
+	{
+		"pt"	"{cyan}A equipe {blue}BLU{cyan} ganha quando todos os jogadores da equipe {red}RED{cyan} estão mortos."
+	}
+	"GRL4"
+	{
+		"#format"	"{1:d}"
+		"pt"	"{cyan}Quando um jogador da equipe {blue}BLU{cyan} é morto por um jogador da equipe {red}RED{cyan}, {1} segundos é subtraído do tempo da partida."
+	}
+	// class info
+	"class red scout"
+	{
+		"pt"	"{green}[HABILIDADE ESPECIAL]{cyan} A Guilhotina Voadora pode empurrar inimigos."
+	}
+	"class red pyro"
+	{
+		"pt"	"{green}[HABILIDADE ESPECIAL]{cyan} Ao acertar: Retarda o movimento do alvo em 40%."
+	}
+	"class red sniper"
+	{
+		"pt"	"{green}[HABILIDADE ESPECIAL]{cyan} Jarratê causa atordoamento por 5 segundos em inimigos."
+	}
+}

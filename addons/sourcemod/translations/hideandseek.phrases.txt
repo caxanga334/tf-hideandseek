@@ -1,0 +1,112 @@
+"Phrases"
+{
+	"Camper Killed"
+	{
+		"en"	"{red}You were killed for camping inside the spawn room."
+	}
+	"Camper Warning"
+	{
+		"en"	"{red}You will be killed if you do not exit the spawn room."
+	}
+	"Round Start"
+	{
+		"#format"	"{1:d}"
+		"en"	"{aqua}The round started! The round duration is {green}{1}{aqua} seconds."
+	}
+	"Cannot Join"
+	{
+		"en"	"{aqua}You can't join RED team while the round is in progress."
+	}
+	"Win By Time"
+	{
+		"en"	"{aqua}RED team won because the round ended."
+	}
+	"Round MVP"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"	"{aqua}The best BLU player is {green}{1}{aqua} with {green}{2}{aqua} kills."
+	}
+	"Round Time"
+	{
+		"#format"	"{1:d}"
+		"en"	"{aqua}Round time remaining: {1} seconds."
+	}
+	"You Hide"
+	{
+		"en"	"{red}You are hiding, BLU players will try to kill you!"
+	}
+	"You Seek"
+	{
+		"en"	"{blue}You are seeking, go hunt the RED team!"
+	}
+	"Moved"
+	{
+		"en"	"{aqua}You were moved to BLU team because it was empty."
+	}
+	"Selected BLU"
+	{
+		"en"	"{green}You were selected to start on {blue}BLU team{green}."
+	}
+	"Plugin By"
+	{
+		"en"	"{aqua}TF2 Hide and Seek by Anonymous Player"
+	}
+	"Plugin Version"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"	"{aqua}You're playing Hide and Seek version {1} {2}"
+	}
+	"BLU Frozen"
+	{
+		"#format"	"{1:d}"
+		"en"	"{mintcream}You are frozen for {1} seconds."		
+	}
+	"Unfrozen"
+	{
+		"en"	"{mintcream}You are now unfrozen."
+	}
+	// advertisements
+	"AD1"
+	{
+		"en"	"{cyan}Type {green}!rtl{cyan} to see the time remaining for the current round."
+	}
+	"AD2"
+	{
+		"en"	"{cyan}Type {green}!hasrules{cyan} to see the Hide and Seek game rules."
+	}	
+	// game rules
+	"GRT"
+	{
+		"en"	"{cyan}Hide and Seek Game Rules:"
+	}
+	"GRL1"
+	{
+		"en"	"{red}RED{cyan} team must survive until the round ends."
+	}
+	"GRL2"
+	{
+		"en"	"{red}RED{cyan} players will be moved to {blue}BLU{cyan} when killed."
+	}
+	"GRL3"
+	{
+		"en"	"{blue}BLU{cyan} team wins by killing all {red}RED{cyan} players."
+	}
+	"GRL4"
+	{
+		"#format"	"{1:d}"
+		"en"	"{cyan}When a {red}RED{cyan} player kills a {blue}BLU{cyan} player, {1} seconds is subtracted from the round time."
+	}
+	// class info
+	"class red scout"
+	{
+		"en"	"{green}[SPECIAL ABILITY]{cyan} The Flying Guillotine can knockback enemies."
+	}
+	"class red pyro"
+	{
+		"en"	"{green}[SPECIAL ABILITY]{cyan} On Hit: Slow target movement by 40%."
+	}
+	"class red sniper"
+	{
+		"en"	"{green}[SPECIAL ABILITY]{cyan} Jarate stuns enemies for 5 seconds."
+	}
+}

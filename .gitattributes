@@ -1,0 +1,13 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# plugin source
+*.sp text
+# include files
+*.inc text
+# config files
+*.cfg text
+# text files (translation, gamedata)
+*.txt text
+# plugin binary
+*.smx binary
