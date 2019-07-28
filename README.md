@@ -2,7 +2,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 # Hide and Seek
-=================================
 Hide and Seek is a sourcemod plugin for Team Fortress 2
 
 ## How it Works
@@ -13,12 +12,21 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 ## Features
 * Automatic team management 
 * Dynamic round time
-* Supported maps (confirmed): CP,CTF,PL,KOTH
-* Supported maps (unconfirmed): SD,TC
+* Supported maps (confirmed): CP,CTF,PL
+* Supported maps (unconfirmed): SD,TC,KOTH
 * Unsupported Maps: MVM,ARENA,TRAINING,RD
+* Miscellaneous maps should be supported (Example: trade maps)
+* Maps from other community made game modes is unsupported.
 
 ## Features (Work-in-Progress)
 * Special Abilities for RED team
 
 ## Features (Planned)
 * Enable/Disable convar
+
+# Dependencies
+* [TF2Items](https://forums.alliedmods.net/showthread.php?p=1050170)
+* [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556)
+* [TF2Attributes](https://github.com/FlaminSarge/tf2attributes/releases)
+* [TF2 Is Player In Spawn?](https://forums.alliedmods.net/showthread.php?p=2196313)
+* [TF2Wearables](https://github.com/nosoop/sourcemod-tf2wearables)
