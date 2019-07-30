@@ -883,7 +883,7 @@ stock PrepareWeapons(int iClient)
 			}
 			case TFClass_DemoMan:
 			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "249 ; 0.3");
+				Format(weaponAttribs, sizeof(weaponAttribs), "249 ; 0.3"); // slow recharge shield
 				SpawnWeapon( iClient, "tf_wearable_demoshield", 131, 1, 0, weaponAttribs, true);
 				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
 				SpawnWeapon( iClient, "tf_weapon_bottle", 1, 1, 0, weaponAttribs, false);
@@ -893,13 +893,13 @@ stock PrepareWeapons(int iClient)
 				Format(weaponAttribs, sizeof(weaponAttribs), "874 ; 2.0");
 				SpawnWeapon( iClient, "tf_weapon_lunchbox", 42, 1, 0, weaponAttribs, false);
 				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.5 ; 205 ; 0.2 ; 737 ; 3");
-				SpawnWeapon( iClient, "tf_weapon_fists", 5, 1, 0, weaponAttribs, false);
+				SpawnWeapon( iClient, "tf_weapon_fists", 656, 1, 0, weaponAttribs, false);
 			}
 			case TFClass_Engineer:
 			{
 				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
 				SpawnWeapon( iClient, "tf_weapon_robot_arm", 142, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "287 ; 0.25 ; 113 ; 10 ; 286 ; 0.4 ; 790 ; 4.0");
+				Format(weaponAttribs, sizeof(weaponAttribs), "287 ; 0.25 ; 113 ; 10 ; 286 ; 0.4 ; 790 ; 4.0"); // -75% sentry gun damage, +10 metal every 5 sec, -60% building health, teleport costs 200 metal
 				SpawnWeapon( iClient, "tf_weapon_pda_engineer_build", 25, 1, 0, weaponAttribs, false);
 				Format(weaponAttribs, sizeof(weaponAttribs), "153 ; 1");
 				SpawnWeapon( iClient, "tf_weapon_pda_engineer_destroy", 26, 1, 0, weaponAttribs, false);
@@ -908,12 +908,12 @@ stock PrepareWeapons(int iClient)
 			}
 			case TFClass_Medic:
 			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25 ; 129 ; -2");
+				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25 ; 129 ; -2"); // reduced health regen
 				SpawnWeapon( iClient, "tf_weapon_bonesaw", 304, 1, 0, weaponAttribs, false);
 			}
 			case TFClass_Sniper:
 			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "278 ; 2.0");
+				Format(weaponAttribs, sizeof(weaponAttribs), "278 ; 2.0"); // 100% slow recharge speed
 				SpawnWeapon( iClient, "tf_weapon_jar", 58, 1, 0, weaponAttribs, false);
 				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
 				SpawnWeapon( iClient, "tf_weapon_club", 3, 1, 0, weaponAttribs, false);
@@ -921,12 +921,12 @@ stock PrepareWeapons(int iClient)
 			}
 			case TFClass_Spy:
 			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "156 ; 1 ; 154 ; 1");
+				Format(weaponAttribs, sizeof(weaponAttribs), "156 ; 1 ; 154 ; 1"); // silent killer, disguise on backstab
 				SpawnWeapon( iClient, "tf_weapon_knife", 4, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "426 ; 0.0 ; 428 ; 2.0");
+				Format(weaponAttribs, sizeof(weaponAttribs), "426 ; 0.0 ; 428 ; 2.0"); // -100% damage, + 100% health
 				SpawnWeapon( iClient, "tf_weapon_builder", 735, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "35 ; 0.25 ; 729 ; 0.5 ; 82 ; 1.4 ; 728 ; 1 ; 160 ; 1 ; 159 ; 1");
-				SpawnWeapon( iClient, "tf_weapon_invis", 30, 1, 0, weaponAttribs, false);
+				Format(weaponAttribs, sizeof(weaponAttribs), "35 ; 0.25 ; 729 ; 0.5 ; 82 ; 1.4 ; 728 ; 1 ; 160 ; 1 ; 159 ; 1"); // -75% slower cloak regen, +40% cloak consume rate, +1 second blink time, silent uncloak
+				SpawnWeapon( iClient, "tf_weapon_invis", 30, 1, 0, weaponAttribs, false); // No cloak meter from ammo boxes when invisible, -50% cloak meter from ammo boxes
 			}
 		}
 		// global RED attributes
