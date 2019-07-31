@@ -3,7 +3,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/caxanga334/tf-hideandseek)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/caxanga334/tf-hideandseek)
 ![GitHub All Releases](https://img.shields.io/github/downloads/caxanga334/tf-hideandseek/total)
-![GitHub forks](https://img.shields.io/github/forks/caxanga334/tf-hideandseek)
 
 # Hide and Seek
 Hide and Seek is a sourcemod plugin for Team Fortress 2
