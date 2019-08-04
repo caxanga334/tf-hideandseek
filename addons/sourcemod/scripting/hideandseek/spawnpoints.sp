@@ -6,7 +6,7 @@ int iMaxREDSP, iMaxBLUSP;
 bool bSpawnPointsRED; // does the current map have spawn points?
 bool bSpawnPointsBLU; // does the current map have spawn points?
 
-new String:g_strConfigFile[PLATFORM_MAX_PATH];
+char g_strConfigFile[PLATFORM_MAX_PATH];
 
 stock SP_BuildPath()
 {
@@ -18,9 +18,9 @@ stock SP_BuildPath()
 
 stock SP_LoadConfig()
 {
-	decl String:CurrentMap[MAX_NAME_LENGTH];
-	decl String:CfgOrigin[16];
-	decl Float:Origin[3];
+	char CurrentMap[MAX_NAME_LENGTH];
+	char CfgOrigin[16];
+	float Origin[3];
 	GetCurrentMap(CurrentMap, sizeof(CurrentMap));
 	
 	array_redspawns.Clear();

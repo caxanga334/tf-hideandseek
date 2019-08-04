@@ -13,8 +13,8 @@
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
 
-new const String:PLUGIN_VERSION[] = "0.0.1";
-new const String:PLUGIN_STATE[] = "ALPHA";
+#define PLUGIN_VERSION "0.0.2"
+#define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
 bool bRoundActive; // is round active
@@ -22,7 +22,6 @@ bool bRoundSetup; // round is in setup mode.
 bool bReadyToPlay; // determine if the game is ready
 bool bWaitingForPlayers;
 bool g_bBLUFrozen; // Is BLU team frozen?
-//bool g_bInSpawn[MAXPLAYERS + 1]; // is player inside spawn?
 bool g_bWasBLU[MAXPLAYERS + 1]; // player started on BLU team?
 
 /********INTEGERS********/
@@ -30,7 +29,6 @@ int g_iRoundTime;
 int g_iRoundInitialTime;
 int g_iTeam[MAXPLAYERS + 1]; // remember player's team
 int g_iCampStrikes[MAXPLAYERS + 1]; // how many camp strikes players received
-//new g_iPlayersInGame = 0;
 int g_iKillCounter[MAXPLAYERS + 1];
 
 /********FLOATS********/
@@ -184,27 +182,27 @@ public void TF2_OnWaitingForPlayersEnd() {
 				CONVAR FUNCTIONS
 *****************************************************/
 
-public OnTimeConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnTimeConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	cvar_iRoundTime = sm_has_round_time.IntValue;
 }
 
-public OnCampConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnCampConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	cvar_iMaxCampStrikes = sm_has_camp_strikes.IntValue;
 }
 
-public OnAnnConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnAnnConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	cvar_flTimeAnnCooldown = sm_has_time_remaining.FloatValue;
 }
 
-public OnRTKRConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnRTKRConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	cvar_iRTKillReduction = sm_has_camp_strikes.IntValue;
 }
 
-public OnScrambleTeamChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnScrambleTeamChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	if (StringToInt(newValue) != 0)
 	{
@@ -212,7 +210,7 @@ public OnScrambleTeamChanged(ConVar convar, char[] oldValue, char[] newValue)
 	}
 }
 
-public OnAutoTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnAutoTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	if (StringToInt(newValue) != 0)
 	{
@@ -220,7 +218,7 @@ public OnAutoTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
 	}
 }
 
-public OnTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
+public void OnTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	if (StringToInt(newValue) != 0)
 	{
@@ -249,7 +247,7 @@ public Action command_suicide(int client, const char[] command, int argc)
 
 public Action Command_RoundTimeLeft(int client, int args)
 {
-	new iTimeRemaining = GetRemainingTime();
+	int iTimeRemaining = GetRemainingTime();
 	CPrintToChat(client, "%t", "Round Time", iTimeRemaining);
 	return Plugin_Handled;
 }
@@ -272,10 +270,10 @@ public Action Command_Rules(int client, int args)
 				EVENT FUNCTIONS
 *****************************************************/
 
-public Action:E_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+public Action E_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
-	new iKiller = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
+	int iKiller = GetClientOfUserId(GetEventInt(event, "attacker"));
 	if(bRoundActive) {
 		// RED player died during while the round is active, move him/her to BLU.
 		if(iKiller >= 1) {
@@ -298,10 +296,10 @@ public Action:E_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 }
 
-public Action:E_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action E_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
-	new TFTeam:iTeam = TF2_GetClientTeam(iClient);
+	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
+	TFTeam iTeam = TF2_GetClientTeam(iClient);
 	if(bRoundActive) // round is active
 	{
 		// player spawned as RED while round is active move the player to BLU
@@ -330,23 +328,23 @@ public Action:E_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcas
 	CheckPlayers();
 }
 
-public Action:E_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
+public Action E_PostInventoryApplication(Event event, const char[] name, bool dontBroadcast)
 {
-	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
+	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(bReadyToPlay)
 	{
 		PrepareWeapons(iClient);
 	}
 }
 
-public Action:E_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+public Action E_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	PrepareMap();
 	CheckPlayers();
 	if(bReadyToPlay)
 	{
 		// reset player's team
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			g_iTeam[i] = 0;
 			// g_bInSpawn[i] = true;
@@ -383,6 +381,7 @@ stock SetRoundTime()
 	}
 	
 	g_iRoundTime = GetTime() + cvar_iRoundTime + iAddPerPlayer + iFreezeTime;
+	LogMessage("[DEBUG] Round Time: %i, RT Cvar: %i, Add Per Player: %i, Players: %i, Freeze: %i", g_iRoundTime, cvar_iRoundTime, iAddPerPlayer, iPlayers, iFreezeTime);
 	
 	if(g_iRoundTime > GetTime() + sm_has_round_time_cap.IntValue)
 	{
@@ -403,7 +402,7 @@ stock SetRoundTime()
 stock StartNewRound()
 {
 	bRoundSetup = true;
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && !IsFakeClient(i))
 		{
@@ -421,7 +420,7 @@ stock CreateTeams()
 	int iMaxBLU = GetInitialBLUPlayers();
 	
 	// select BLU players and store on g_iTeam
-	for (new i = 1; i <= iMaxBLU; i++)
+	for (int i = 1; i <= iMaxBLU; i++)
 	{
 		LogMessage("BLU Selection: i = %d", i);
 		iTarget = GetRandomPlayer();
@@ -434,7 +433,7 @@ stock CreateTeams()
 		}
 	}
 	// assign players to a team
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i)) // move BLU players to RED
 		{
@@ -457,7 +456,7 @@ stock CreateTeams()
 public Action ActiveRound(Handle timer)
 {
 	//respawns dead players after moving them
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && !IsPlayerAlive(i) && !IsFakeClient(i) && GetClientTeam(i) >= 2) // checks for dead RED/BLU players at round start.
 		{
@@ -467,7 +466,7 @@ public Action ActiveRound(Handle timer)
 	// RED = 2 | BLU = 3
 	if(GetTeamClientCount(3) <= 0) // round is about to start but BLU is empty
 	{
-		new iTarget = GetRandomPlayer();
+		int iTarget = GetRandomPlayer();
 		TF2_ChangeClientTeam(iTarget, TFTeam_Blue);
 		g_bWasBLU[iTarget] = true;
 		CPrintToChat(iTarget, "%t", "Moved");
@@ -489,7 +488,7 @@ public Action ActiveRound(Handle timer)
 	// End Round Timers
 	bRoundActive = true;// enable round start flag, this blocks people from moving from BLU to RED
 	bRoundSetup = false;
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i))
 		{
@@ -525,11 +524,11 @@ stock EndRound(int iWinner)
 	int iPlayer = -1;
 	bRoundActive = false;
 	
-	new iFlags = GetCommandFlags("mp_forcewin");
+	int iFlags = GetCommandFlags("mp_forcewin");
 	SetCommandFlags( "mp_forcewin", iFlags & ~FCVAR_CHEAT );
 	ServerCommand( "mp_forcewin %i", iWinner );
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(g_iKillCounter[i] > iMVP) // grab the highest number stored in the array
 		{
@@ -585,7 +584,7 @@ public Action Timer_RoundStart(Handle timer)
 public Action Timer_UnfreezeBLU(Handle timer)
 {
 	g_bBLUFrozen = false;
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && GetClientTeam(i) == _:TFTeam_Blue)
 		{
@@ -602,7 +601,7 @@ public Action Timer_WinCheck(Handle timer)
 	if((GetGameTime() > flLastTimeAnn) && cvar_flTimeAnnCooldown > 0)
 	{
 		flLastTimeAnn = GetGameTime() + cvar_flTimeAnnCooldown;
-		new iTimeRemaining = g_iRoundTime - GetTime();
+		int iTimeRemaining = g_iRoundTime - GetTime();
 		CPrintToChatAll("%t", "Round Time", iTimeRemaining);
 	}
 	if(GetTime() > g_iRoundTime)
@@ -625,7 +624,7 @@ public Action Timer_SpawnCheck(Handle timer)
 	}
 	else
 	{
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && IsPlayerAlive(i) && !IsFakeClient(i) && GetClientTeam(i) == _:TFTeam_Red && GetRunningTime() > 30)
 			{
@@ -677,9 +676,9 @@ public OnClientDisconnect(iTarget)
 // a function to get a random player that works (maybe?)
 int GetRandomPlayer()
 {
-	new players_available[MAXPLAYERS+1];
-	new counter = 0; // counts how many valid players we have
-	for (new i = 1; i <= MaxClients; i++)
+	int players_available[MAXPLAYERS+1];
+	int counter = 0; // counts how many valid players we have
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		// Ignore players who was selected to start on BLU last round.
 		if (IsClientInGame(i) && !IsFakeClient(i) && g_bWasBLU[i] == false)
@@ -786,7 +785,7 @@ stock FreezePlayers() {
 		int iFreezeTime;
 		iFreezeTime = RoundToNearest(sm_has_freeze_duration.FloatValue);
 		
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			if(IsClientInGame(i) && GetClientTeam(i) == _:TFTeam_Blue)
 			{
@@ -807,7 +806,7 @@ stock FreezePlayers() {
 // returns the time remaining for the round in seconds
 int GetRemainingTime()
 {
-	new iTimeRemaining = g_iRoundTime - GetTime();
+	int iTimeRemaining = g_iRoundTime - GetTime();
 	if(bRoundActive)
 	{
 		return iTimeRemaining;
@@ -821,7 +820,7 @@ int GetRemainingTime()
 // returns how many seconds has passed since the round started
 int GetRunningTime()
 {
-	new iRunningTime = GetTime() - g_iRoundInitialTime;
+	int iRunningTime = GetTime() - g_iRoundInitialTime;
 	if(bRoundActive)
 	{
 		return iRunningTime;
@@ -838,11 +837,11 @@ int GetRunningTime()
 stock PrepareWeapons(int iClient)
 {
 	int iPrimary, iSecondary;
-	new TFTeam:iTeam = TF2_GetClientTeam(iClient);
-	new TFClassType:iClass = TF2_GetPlayerClass( iClient );
-	new String:weaponAttribs[256];
+	TFTeam iTeam = TF2_GetClientTeam(iClient);
+	TFClassType iClass = TF2_GetPlayerClass( iClient );
+	char weaponAttribs[256];
 	//new iIndex; // item definition index
-	new iWeapon; // weapon entity index
+	int iWeapon; // weapon entity index
 	
 	if(iTeam == TFTeam_Red)
 	{
@@ -862,11 +861,11 @@ stock PrepareWeapons(int iClient)
 		
 		switch( iClass )
 		{
-			case TFClass_Scout: // cleaver causes knockback, slow recharge | no fall damage, 10% increased jump height
+			case TFClass_Scout: // cleaver causes knockback, slow recharge
 			{
 				Format(weaponAttribs, sizeof(weaponAttribs), "522 ; 1 ; 278 ; 4.0");
 				SpawnWeapon( iClient, "tf_weapon_cleaver", 812, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25 ; 275 ; 1 ; 326 ; 1.1");
+				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
 				SpawnWeapon( iClient, "tf_weapon_bat", 0, 1, 0, weaponAttribs, false);
 				CPrintToChat( iClient, "%t", "class red scout");
 			}
@@ -934,7 +933,6 @@ stock PrepareWeapons(int iClient)
 		if(iWeapon >= 1)
 		{
 			TF2Attrib_SetByName(iWeapon, "health from packs decreased", 0.50);
-			TF2Attrib_SetByName(iWeapon, "heal on hit for slowfire", 10.0);
 			TF2Attrib_SetByName(iWeapon, "restore health on kill", 100.0);
 		}
 	}
@@ -959,10 +957,14 @@ stock PrepareWeapons(int iClient)
 					TF2Attrib_SetByName(iWeapon, "halloween increased jump height", 1.4);
 				}
 			}
-/* 			case TFClass_Soldier:
+			case TFClass_Soldier:
 			{
-
-			} */
+				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
+				if(iWeapon >= 1)
+				{
+					TF2Attrib_SetByName(iWeapon, "rocket specialist", 2.0);
+				}
+			}
 			case TFClass_Pyro:
 			{
 				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
@@ -1024,13 +1026,13 @@ public TF2_OnConditionAdded(client, TFCond:cond)
 
 stock SpawnWeapon(client,String:name[],index,level,qual,String:att[], bool:bWearable = false)
 {
-	new Handle:hWeapon = TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION|PRESERVE_ATTRIBUTES);
+	Handle hWeapon = TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION|PRESERVE_ATTRIBUTES);
 	TF2Items_SetClassname(hWeapon, name);
 	TF2Items_SetItemIndex(hWeapon, index);
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
-	new String:atts[32][32];
-	new count = ExplodeString(att, " ; ", atts, 32, 32);
+	char atts[32][32];
+	int count = ExplodeString(att, " ; ", atts, 32, 32);
 	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
@@ -1045,7 +1047,7 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[], bool:bWear
 		TF2Items_SetNumAttributes(hWeapon, 0);
 	if (hWeapon==INVALID_HANDLE)
 		return -1;
-	new entity = TF2Items_GiveNamedItem(client, hWeapon);
+	int entity = TF2Items_GiveNamedItem(client, hWeapon);
 	CloseHandle(hWeapon);
 	if( IsValidEdict( entity ) )
 	{

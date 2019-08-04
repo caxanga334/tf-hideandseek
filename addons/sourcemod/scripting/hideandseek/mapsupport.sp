@@ -1,7 +1,7 @@
 // global variables
 int iRemoveDoors;
 
-new String:MapSupportFile[PLATFORM_MAX_PATH];
+char MapSupportFile[PLATFORM_MAX_PATH];
 
 stock MS_BuildPath()
 {
@@ -48,7 +48,7 @@ stock MS_LoadConfig()
 
 /* Function to prepare the map for hide and seek */
 stock PrepareMap() {
-	new i = -1;
+	int i = -1;
 	while ((i = FindEntityByClassname(i, "trigger_capture_area")) != -1)
 	{
 		if(IsValidEntity(i))
