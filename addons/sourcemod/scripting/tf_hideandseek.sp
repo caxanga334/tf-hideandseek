@@ -506,6 +506,7 @@ public Action ActiveRound(Handle timer)
 	FreezePlayers();
 	int iRoundDuration = GetRemainingTime();
 	CPrintToChatAll("%t", "Round Start", iRoundDuration);// round start message
+	MS_AddTime();
 }
 
 stock EndRound(int iWinner)

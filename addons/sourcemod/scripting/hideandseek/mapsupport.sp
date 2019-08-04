@@ -118,3 +118,16 @@ stock PrepareMap() {
 		}
 	}
 }
+
+void MS_AddTime()
+{
+	int i = -1;
+	while ((i = FindEntityByClassname(i, "team_round_timer")) != -1)
+	{
+		if(IsValidEntity(i))
+		{
+			SetVariantInt(9999);
+			AcceptEntityInput(i, "AddTime");
+		} 
+	}
+}
