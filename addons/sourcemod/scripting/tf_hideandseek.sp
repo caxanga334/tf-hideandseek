@@ -358,7 +358,7 @@ public Action E_RoundStart(Event event, const char[] name, bool dontBroadcast)
 *****************************************************/
 // functions to manage rounds
 
-stock SetRoundTime()
+void SetRoundTime()
 {
 	int iPlayers = GetTeamClientCount(2) + GetTeamClientCount(3); // ignore spectators
 	int iAddPerPlayer, iFreezeTime;
@@ -399,7 +399,7 @@ stock SetRoundTime()
 }
 
 // starts a new round
-stock StartNewRound()
+void StartNewRound()
 {
 	bRoundSetup = true;
 	for (int i = 1; i <= MaxClients; i++)
@@ -414,7 +414,7 @@ stock StartNewRound()
 }
 
 // This function will move players to form teams.
-stock CreateTeams()
+void CreateTeams()
 {
 	int iTarget;
 	int iMaxBLU = GetInitialBLUPlayers();
@@ -509,7 +509,7 @@ public Action ActiveRound(Handle timer)
 	MS_AddTime();
 }
 
-stock EndRound(int iWinner)
+void EndRound(int iWinner)
 {
 	if(HT_WinCheck != INVALID_HANDLE)
 	{
@@ -721,7 +721,7 @@ public void TF2Spawn_EnterSpawn( iClient, iEntity )
 } */
 
 // function that checks player count
-stock CheckPlayers()
+void CheckPlayers()
 {
 	// RED = 2 | BLU = 3
 	int iRed = GetTeamClientCount(2);
@@ -743,7 +743,8 @@ stock CheckPlayers()
 		if(iRed + iBlue >= 2) // we have 2 players in game
 		{
 			bReadyToPlay = true; // set ready to play
-			ServerCommand("mp_restartround 5"); // restarts round
+			//ServerCommand("mp_restartround 5"); // restarts round
+			EndRound(0); // stalemate 
 		}
 	}
 	else if(bReadyToPlay && iRed + iBlue < 2) // game is ready but we have 1 or less players
@@ -776,7 +777,7 @@ int GetInitialBLUPlayers()
 	return iTmp;
 }
 
-stock FreezePlayers() {
+void FreezePlayers() {
 	sm_has_freeze_duration = FindConVar("sm_has_freeze_duration");
 	if (sm_has_freeze_duration != null) {
 		g_bBLUFrozen = true;
@@ -835,7 +836,7 @@ int GetRunningTime()
 				WEAPON FUNCTIONS
 *****************************************************/
 
-stock PrepareWeapons(int iClient)
+void PrepareWeapons(int iClient)
 {
 	int iPrimary, iSecondary;
 	TFTeam iTeam = TF2_GetClientTeam(iClient);
