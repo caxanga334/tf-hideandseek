@@ -1037,8 +1037,8 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[], bool:bWear
 	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
-		new i2 = 0;
-		for (new i = 0; i < count; i+=2)
+		int i2 = 0;
+		for (int i = 0; i < count; i+=2)
 		{
 			TF2Items_SetAttribute(hWeapon, i2, StringToInt(atts[i]), StringToFloat(atts[i+1]));
 			i2++;
