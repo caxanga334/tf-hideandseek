@@ -89,7 +89,7 @@ stock PrepareMap() {
 	{
 		if(IsValidEntity(i))
 		{
-			SetVariantInt(0);
+			SetVariantInt(5);
 			AcceptEntityInput(i, "SetSetupTime");
 		} 
 	}

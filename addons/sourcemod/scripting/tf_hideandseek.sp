@@ -13,7 +13,7 @@
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
 
-#define PLUGIN_VERSION "0.0.2"
+#define PLUGIN_VERSION "0.0.3"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -387,11 +387,11 @@ stock SetRoundTime()
 	{
 		g_iRoundTime = GetTime() + sm_has_round_time_cap.IntValue + iFreezeTime;
 	}
-	else
+/* 	else
 	{
 		g_iRoundTime = GetTime() + cvar_iRoundTime; // fail-safe
 		LogError("An error occurred during round time calculation.");
-	}
+	} */
 
 	
 	g_iRoundInitialTime = GetTime();
@@ -925,8 +925,8 @@ stock PrepareWeapons(int iClient)
 				SpawnWeapon( iClient, "tf_weapon_knife", 4, 1, 0, weaponAttribs, false);
 				Format(weaponAttribs, sizeof(weaponAttribs), "426 ; 0.0 ; 428 ; 2.0"); // -100% damage, + 100% health
 				SpawnWeapon( iClient, "tf_weapon_builder", 735, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "35 ; 0.25 ; 729 ; 0.5 ; 82 ; 1.4 ; 728 ; 1 ; 160 ; 1 ; 159 ; 1"); // -75% slower cloak regen, +40% cloak consume rate, +1 second blink time, silent uncloak
-				SpawnWeapon( iClient, "tf_weapon_invis", 30, 1, 0, weaponAttribs, false); // No cloak meter from ammo boxes when invisible, -50% cloak meter from ammo boxes
+				Format(weaponAttribs, sizeof(weaponAttribs), "35 ; 0.25 ; 729 ; 0.8 ; 82 ; 1.4 ; 728 ; 1 ; 160 ; 1 ; 159 ; 1"); // -75% slower cloak regen, +40% cloak consume rate, +1 second blink time, silent uncloak
+				SpawnWeapon( iClient, "tf_weapon_invis", 30, 1, 0, weaponAttribs, false); // No cloak meter from ammo boxes when invisible, -20% cloak meter from ammo boxes
 			}
 		}
 		// global RED attributes
