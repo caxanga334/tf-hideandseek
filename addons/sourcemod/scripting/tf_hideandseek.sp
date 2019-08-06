@@ -13,7 +13,7 @@
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
 
-#define PLUGIN_VERSION "0.0.3"
+#define PLUGIN_VERSION "0.0.4"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -23,6 +23,7 @@ bool bReadyToPlay; // determine if the game is ready
 bool bWaitingForPlayers;
 bool g_bBLUFrozen; // Is BLU team frozen?
 bool g_bWasBLU[MAXPLAYERS + 1]; // player started on BLU team?
+bool g_bSelected[MAXPLAYERS + 1]; // player who were selected for the current round
 
 /********INTEGERS********/
 int g_iRoundTime;
@@ -30,6 +31,7 @@ int g_iRoundInitialTime;
 int g_iTeam[MAXPLAYERS + 1]; // remember player's team
 int g_iCampStrikes[MAXPLAYERS + 1]; // how many camp strikes players received
 int g_iKillCounter[MAXPLAYERS + 1];
+int g_iPSState; // BLU selection state
 
 /********FLOATS********/
 float flLastTimeAnn = 0.0;
@@ -166,6 +168,7 @@ public void OnMapStart()
 	SteamWorks_SetGameDescription("Hide and Seek");
 	SP_LoadConfig();
 	MS_LoadConfig();
+	g_iPSState = 0; // state 0, nobody joined BLU
 }
 
 public void TF2_OnWaitingForPlayersStart() {
@@ -408,6 +411,7 @@ void StartNewRound()
 		{
 			g_iCampStrikes[i] = 0;
 			g_iKillCounter[i] = 0;
+			g_bSelected[i] = false;
 		}
 	}
 	CreateTeams();
@@ -428,6 +432,7 @@ void CreateTeams()
 		{
 			g_iTeam[iTarget] = 3; // BLU
 			g_bWasBLU[iTarget] = true;
+			g_bSelected[iTarget] = true;
 			LogMessage("Player %L was selected to play on BLU team", iTarget);
 			CPrintToChat(iTarget,"%t", "Selected BLU");
 		}
@@ -446,7 +451,7 @@ void CreateTeams()
 			{
 				TF2_ChangeClientTeam(i, TFTeam_Red);
 				g_iTeam[i] = 2;
-				g_bWasBLU[i] = false;
+				// g_bWasBLU[i] = false;
 			}
 		}
 	}
@@ -507,6 +512,15 @@ public Action ActiveRound(Handle timer)
 	int iRoundDuration = GetRemainingTime();
 	CPrintToChatAll("%t", "Round Start", iRoundDuration);// round start message
 	MS_AddTime();
+	
+	if(g_iPSState == 1) // reset g_bWasBLU
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			g_bWasBLU[i] = false;
+		}
+		g_iPSState = 0; // set state to 0
+	}
 }
 
 void EndRound(int iWinner)
@@ -662,6 +676,7 @@ public OnClientConnected(iTarget)
 	{
 		g_iTeam[iTarget] = 3; // Assign players to BLU team if they connect after round setup
 		g_bWasBLU[iTarget] = false;
+		g_bSelected[iTarget] = false;
 		g_iKillCounter[iTarget] = 0;
 	}
 }
@@ -670,11 +685,14 @@ public OnClientDisconnect(iTarget)
 {
 	g_iTeam[iTarget] = 0;
 	g_bWasBLU[iTarget] = false;
+	g_bSelected[iTarget] = false;
 	g_iKillCounter[iTarget] = 0;
 	CheckPlayers();
 }
 
-// a function to get a random player that works (maybe?)
+// selects a random player to join BLU
+// state 0: none or some players joined BLU, select those who didn't joined BLU before
+// state 1: all players joined BLU, select random players.
 int GetRandomPlayer()
 {
 	int players_available[MAXPLAYERS+1];
@@ -688,9 +706,26 @@ int GetRandomPlayer()
 			counter++;
 		}
 	}
+	
+	// all available players already played on BLU
+	if(counter == 0)
+	{
+		LogMessage("DEBUG: All players already played on BLU, resetting...");
+		g_iPSState = 1; // state 1, all players joined BLU
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			// Ignore players who were already selected for the current round. 
+			if (IsClientInGame(i) && !IsFakeClient(i) && g_bSelected[i] == false) 
+			{
+				players_available[counter] = i; // stores the client userid
+				counter++;
+			}
+		}
+	}
+	
 	// now we should have an array filled with user ids and exactly how many players we have in game.
 	int iRandomMax = counter - 1;
-	int iRandom = GetRandomInt(0,iRandomMax); // get a random number between 1 and counted players
+	int iRandom = GetRandomInt(0,iRandomMax); // get a random number between 0 and counted players
 	// now we get the user id from the array cell selected via iRandom
 	//CPrintToChatAll("DEBUG: iRandom: %d ,UserID: %d , iRandomMax: %d", iRandom, players_available[iRandom], iRandomMax);
 	LogMessage("DEBUG: iRandom: %d ,UserID: %d , iRandomMax: %d", iRandom, players_available[iRandom], iRandomMax);
