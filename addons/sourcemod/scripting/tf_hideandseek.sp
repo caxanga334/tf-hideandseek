@@ -17,10 +17,6 @@
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
-bool bRoundActive; // is round active
-bool bRoundSetup; // round is in setup mode.
-bool bReadyToPlay; // determine if the game is ready
-bool bWaitingForPlayers;
 bool g_bBLUFrozen; // Is BLU team frozen?
 bool g_bWasBLU[MAXPLAYERS + 1]; // player started on BLU team?
 bool g_bSelected[MAXPLAYERS + 1]; // player who were selected for the current round
@@ -32,9 +28,13 @@ int g_iTeam[MAXPLAYERS + 1]; // remember player's team
 int g_iCampStrikes[MAXPLAYERS + 1]; // how many camp strikes players received
 int g_iKillCounter[MAXPLAYERS + 1];
 int g_iPSState; // BLU selection state
+int g_iHASState; // game state
 
 /********FLOATS********/
 float flLastTimeAnn = 0.0;
+
+/********CHAR********/
+
 
 /********HANDLES********/
 Handle HT_WinCheck;
@@ -73,6 +73,16 @@ enum
 	TFWepSlot_Sapper = 1,
 	TFWepSlot_PDA_Disguise = 3,
 	TFWepSlot_PDA_InvisWatch = 4,
+};
+
+enum
+{
+	HAS_State_NONE = -1, // initial state on map load
+	HAS_State_WFP = 0, // waiting for players
+	HAS_State_NEP = 1, // not enough players
+	HAS_State_READY = 2, // game is ready to start
+	HAS_State_SETUP = 3, // round is in setup
+	HAS_State_ACTIVE = 4, // round is active
 };
 
  
@@ -169,15 +179,16 @@ public void OnMapStart()
 	SP_LoadConfig();
 	MS_LoadConfig();
 	g_iPSState = 0; // state 0, nobody joined BLU
+	g_iHASState = HAS_State_NONE;
 }
 
 public void TF2_OnWaitingForPlayersStart() {
-	bWaitingForPlayers = true;
+	g_iHASState = HAS_State_WFP; // waiting for players
 	LogMessage("TF2 Waiting For Players started.");
 }
 
 public void TF2_OnWaitingForPlayersEnd() {
-	bWaitingForPlayers = false;
+	g_iHASState = HAS_State_NEP; // waiting for players ended
 	LogMessage("TF2 Waiting For Players ended.");
 }
 
@@ -237,7 +248,7 @@ public void OnTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue
 // Commands
 public Action command_suicide(int client, const char[] command, int argc)
 {
-	if(bRoundActive)
+	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		LogAction(client, -1, "Player %L attempted to suicide while the round was active.", client);
 		return Plugin_Handled;
@@ -277,7 +288,7 @@ public Action E_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	int iKiller = GetClientOfUserId(GetEventInt(event, "attacker"));
-	if(bRoundActive) {
+	if(g_iHASState == HAS_State_ACTIVE) {
 		// RED player died during while the round is active, move him/her to BLU.
 		if(iKiller >= 1) {
 			if(GetClientTeam(iClient) == _:TFTeam_Red && IsClientInGame(iKiller)) {
@@ -303,7 +314,7 @@ public Action E_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	TFTeam iTeam = TF2_GetClientTeam(iClient);
-	if(bRoundActive) // round is active
+	if(g_iHASState == HAS_State_ACTIVE) // round is active
 	{
 		// player spawned as RED while round is active move the player to BLU
 		// g_iTeam check allows RED players that were dead before the round was active to respawn
@@ -317,7 +328,7 @@ public Action E_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 			SetEntityMoveType(iClient, MOVETYPE_NONE);
 		}
 	}
-	if(bReadyToPlay)
+	if(g_iHASState >= HAS_State_READY)
 	{
 		if(iTeam == TFTeam_Red && SP_Available_RED())
 		{
@@ -334,7 +345,7 @@ public Action E_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 public Action E_PostInventoryApplication(Event event, const char[] name, bool dontBroadcast)
 {
 	int iClient = GetClientOfUserId(GetEventInt(event, "userid"));
-	if(bReadyToPlay)
+	if(g_iHASState >= HAS_State_READY)
 	{
 		PrepareWeapons(iClient);
 	}
@@ -344,7 +355,7 @@ public Action E_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	PrepareMap();
 	CheckPlayers();
-	if(bReadyToPlay)
+	if(g_iHASState >= HAS_State_READY)
 	{
 		// reset player's team
 		for (int i = 1; i <= MaxClients; i++)
@@ -404,7 +415,7 @@ void SetRoundTime()
 // starts a new round
 void StartNewRound()
 {
-	bRoundSetup = true;
+	g_iHASState = HAS_State_SETUP;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && !IsFakeClient(i))
@@ -491,8 +502,9 @@ public Action ActiveRound(Handle timer)
 	HT_WinCheck = CreateTimer(1.0, Timer_WinCheck, _, TIMER_REPEAT); // timed check to see if any team won
 	HT_CampCheck = CreateTimer(8.0, Timer_SpawnCheck, _, TIMER_REPEAT); // check for players camping inside spawn
 	// End Round Timers
-	bRoundActive = true;// enable round start flag, this blocks people from moving from BLU to RED
-	bRoundSetup = false;
+
+	g_iHASState = HAS_State_ACTIVE;
+
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i))
@@ -537,7 +549,7 @@ void EndRound(int iWinner)
 	}
 	int iMVP = 0;
 	int iPlayer = -1;
-	bRoundActive = false;
+	g_iHASState = HAS_State_READY;
 	
 	int iFlags = GetCommandFlags("mp_forcewin");
 	SetCommandFlags( "mp_forcewin", iFlags & ~FCVAR_CHEAT );
@@ -633,7 +645,7 @@ public Action Timer_WinCheck(Handle timer)
 
 public Action Timer_SpawnCheck(Handle timer)
 {
-	if(!bRoundActive || cvar_iMaxCampStrikes == 0) // round is not active OR camp strike is disabled, do nothing
+	if(g_iHASState == HAS_State_ACTIVE || cvar_iMaxCampStrikes == 0) // round is not active OR camp strike is disabled, do nothing
 	{
 		return Plugin_Continue;
 	}
@@ -672,7 +684,7 @@ public Action Timer_SpawnCheck(Handle timer)
 
 public OnClientConnected(iTarget)
 {
-	if(bRoundActive)
+	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		g_iTeam[iTarget] = 3; // Assign players to BLU team if they connect after round setup
 		g_bWasBLU[iTarget] = false;
@@ -734,7 +746,7 @@ int GetRandomPlayer()
 
 public void TF2Spawn_EnterSpawn( iClient, iEntity )
 {
-	if(bRoundActive && IsClientInGame(iClient) && IsPlayerAlive(iClient) && !IsFakeClient(iClient) && GetClientTeam(iClient) == _:TFTeam_Red)
+	if(g_iHASState == HAS_State_ACTIVE && IsClientInGame(iClient) && IsPlayerAlive(iClient) && !IsFakeClient(iClient) && GetClientTeam(iClient) == _:TFTeam_Red)
 	{
 		if(g_iCampStrikes[iClient] > cvar_iMaxCampStrikes) // player is a camper
 		{
@@ -762,7 +774,7 @@ void CheckPlayers()
 	int iRed = GetTeamClientCount(2);
 	int iBlue = GetTeamClientCount(3);
 	// game is in progress
-	if(bRoundActive)
+	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		if(iRed <= 0)
 		{
@@ -773,18 +785,20 @@ void CheckPlayers()
 			EndRound(2);		
 		}		
 	}
-	else if(!bReadyToPlay && !bRoundSetup && !bWaitingForPlayers) // not playing and not enough players
+	else if(g_iHASState == HAS_State_NEP) // not playing and not enough players
 	{
 		if(iRed + iBlue >= 2) // we have 2 players in game
 		{
-			bReadyToPlay = true; // set ready to play
+			g_iHASState = HAS_State_READY; // set ready to play
 			//ServerCommand("mp_restartround 5"); // restarts round
-			EndRound(0); // stalemate 
+			EndRound(0); // stalemate
+			LogMessage("We have 2 or more players, starting hide and seek.")
 		}
 	}
-	else if(bReadyToPlay && iRed + iBlue < 2) // game is ready but we have 1 or less players
+	else if(g_iHASState >= HAS_State_READY && iRed + iBlue < 2) // game is ready but we have 1 or less players
 	{
-		bReadyToPlay = false;
+		g_iHASState = HAS_State_NEP; // not enough players
+		LogMessage("1 or less players, game state changed to not enough players")
 	}
 }
 
@@ -844,7 +858,7 @@ void FreezePlayers() {
 int GetRemainingTime()
 {
 	int iTimeRemaining = g_iRoundTime - GetTime();
-	if(bRoundActive)
+	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		return iTimeRemaining;
 	}
@@ -858,7 +872,7 @@ int GetRemainingTime()
 int GetRunningTime()
 {
 	int iRunningTime = GetTime() - g_iRoundInitialTime;
-	if(bRoundActive)
+	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		return iRunningTime;
 	}
@@ -1046,7 +1060,7 @@ void PrepareWeapons(int iClient)
 // stun players when they get jarated
 public TF2_OnConditionAdded(client, TFCond:cond)
 {
-	if(GetClientTeam(client) == _:TFTeam_Blue && bRoundActive && cond == TFCond_Jarated)
+	if(GetClientTeam(client) == _:TFTeam_Blue && g_iHASState == HAS_State_ACTIVE && cond == TFCond_Jarated)
 	{
 		TF2_StunPlayer(client, 5.0, 0.0, TF_STUNFLAG_LIMITMOVEMENT|TF_STUNFLAG_BONKSTUCK|TF_STUNFLAG_THIRDPERSON);
 	}
