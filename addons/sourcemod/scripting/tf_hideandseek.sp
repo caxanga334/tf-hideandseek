@@ -13,7 +13,7 @@
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
 
-#define PLUGIN_VERSION "0.0.4"
+#define PLUGIN_VERSION "0.0.5"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -119,6 +119,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_roundtimeleft", Command_RoundTimeLeft, "Displays the time remaining for the current round.");
 	RegConsoleCmd("sm_rtl", Command_RoundTimeLeft, "Displays the time remaining for the current round.");
 	RegConsoleCmd("sm_hasrules", Command_Rules, "Displays the Hide and Seek game rules.");
+	RegAdminCmd("sm_has_debug", Command_Debug, ADMFLAG_ROOT, "Print debug info");
 	
 	// convars
 	CreateConVar("sm_hideandseek_version", PLUGIN_VERSION, "Hide and Seek plugin version", FCVAR_NOTIFY);
@@ -274,6 +275,58 @@ public Action Command_Rules(int client, int args)
 	CPrintToChat(client,"%t", "GRL3");
 	CPrintToChat(client,"%t", "GRL4", cvar_iRTKillReduction);
 	return Plugin_Handled;
+}
+
+public Action Command_Debug(int client, int args)
+{
+	char gamestate[64];
+	
+	ReplyToCommand(client, "===Hide and Seek Debug===");
+	
+	switch( g_iPSState )
+	{
+		case HAS_State_NONE:
+		{
+			gamestate = "NONE";
+		}
+		case HAS_State_WFP:
+		{
+			gamestate = "WAITING FOR PLAYERS";
+		}
+		case HAS_State_NEP:
+		{
+			gamestate = "NOT ENOUGH PLAYERS";
+		}
+		case HAS_State_READY:
+		{
+			gamestate = "READY";
+		}
+		case HAS_State_SETUP:
+		{
+			gamestate = "ROUND SETUP";
+		}
+		case HAS_State_ACTIVE:
+		{
+			gamestate = "ROUND ACTIVE";
+		}
+	}
+	
+	ReplyToCommand(client, "Game State: %s", gamestate);
+	
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && !IsFakeClient(i))
+		{
+			if(g_bWasBLU[i] == true)
+			{
+				ReplyToCommand(client, "Player %N Was BLU: True", i);
+			}
+			else
+			{
+				ReplyToCommand(client, "Player %N Was BLU: False", i);
+			}
+		}
+	}
 }
 
 /****************************************************
