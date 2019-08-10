@@ -283,7 +283,7 @@ public Action Command_Debug(int client, int args)
 	
 	ReplyToCommand(client, "===Hide and Seek Debug===");
 	
-	switch( g_iPSState )
+	switch( g_iHASState )
 	{
 		case HAS_State_NONE:
 		{
