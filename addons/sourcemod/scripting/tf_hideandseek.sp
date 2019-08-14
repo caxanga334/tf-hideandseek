@@ -94,6 +94,21 @@ public Plugin myinfo =
 	version = PLUGIN_VERSION,
 	url = "https://github.com/caxanga334/"
 }
+
+stock APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	char gamefolder[32]
+	GetGameFolderName(gamefolder, sizeof(gamefolder));
+	if(!StrEqual(gamefolder, "tf")
+	{
+		LogError("This plugin is for TF2 only!");
+		return APLRes_Failure;
+	}
+	else
+	{
+		return APLRes_Success;
+	}
+}
  
 public void OnPluginStart()
 {	
