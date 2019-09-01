@@ -9,6 +9,7 @@
 #define REQUIRE_EXTENSIONS
 #define AUTOLOAD_EXTENSIONS
 #include <tf2items>
+#undef REQUIRE_EXTENSIONS
 #include <SteamWorks>
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
@@ -117,10 +118,11 @@ public void OnPluginStart()
 	SP_BuildPath();
 	MS_BuildPath();
 	
-	HookEvent("player_spawn", E_PlayerSpawn);
-	HookEvent("player_death", E_PlayerDeath);
-	HookEvent("teamplay_round_start", E_RoundStart);
-	HookEvent("post_inventory_application", E_PostInventoryApplication );
+	HookEvent( "player_spawn", E_PlayerSpawn );
+	HookEvent( "player_death", E_PlayerDeath );
+	HookEvent( "teamplay_round_start", E_RoundStart );
+	HookEvent( "post_inventory_application", E_PostInventoryApplication );
+	HookEvent( "player_builtobject", E_BuildObject, EventHookMode_Pre );
 	
 	// translations
 	LoadTranslations("hideandseek.phrases");
@@ -200,9 +202,19 @@ public void OnPluginStart()
 	AutoExecConfig(true, "plugin.hideandseek");
 }
 
+public void OnLibraryAdded(const char[] name)
+{
+	if(StrEqual(name, "SteamWorks", false))
+	{
+		SteamWorks_SetGameDescription("Hide and Seek");
+	}
+}
+
 public void OnMapStart()
 {
-	SteamWorks_SetGameDescription("Hide and Seek");
+	if(LibraryExists("SteamWorks"))
+		SteamWorks_SetGameDescription("Hide and Seek");
+		
 	SP_LoadConfig();
 	MS_LoadConfig();
 	g_iPSState = 0; // state 0, nobody joined BLU
@@ -448,6 +460,16 @@ public Action E_RoundStart(Event event, const char[] name, bool dontBroadcast)
 			// g_bInSpawn[i] = true;
 		}
 		CreateTimer(2.0, Timer_RoundStart);
+	}
+}
+
+public Action E_BuildObject(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	int index = event.GetInt("index");
+	if( !IsFakeClient(client) && GetEntProp( index, Prop_Send, "m_iTeamNum" ) == view_as<int>(TFTeam_Red) )
+	{
+		CreateTimer(0.1, Timer_BuildObject, index);
 	}
 }
 
@@ -771,6 +793,26 @@ public Action Timer_MovetoBLU(Handle timer, any iClient)
 	return Plugin_Stop;
 }
 
+public Action Timer_BuildObject(Handle timer, any index)
+{
+	char classname[32];
+	
+	if( IsValidEdict(index) )
+	{
+		GetEdictClassname(index, classname, sizeof(classname))
+		
+		if( strcmp(classname, "obj_dispenser", false) == 0 )
+		{
+			SetEntProp(index, Prop_Send, "m_bMiniBuilding", 1);
+			SetEntPropFloat(index, Prop_Send, "m_flModelScale", 0.90);
+			SetVariantInt(100);
+			AcceptEntityInput(index, "SetHealth");			
+		}
+	}
+	
+	return Plugin_Stop;
+}
+
 /****************************************************
 				PLAYER FUNCTIONS
 *****************************************************/
@@ -779,7 +821,7 @@ public OnClientConnected(iTarget)
 {
 	if(g_iHASState == HAS_State_ACTIVE)
 	{
-		g_iTeam[iTarget] = 3; // Assign players to BLU team if they connect after round setup
+		g_iTeam[iTarget] = view_as<int>(TFTeam_Blue); // Assign players to BLU team if they connect after round setup
 		g_bWasBLU[iTarget] = false;
 		g_bSelected[iTarget] = false;
 		g_iKillCounter[iTarget] = 0;
@@ -788,7 +830,7 @@ public OnClientConnected(iTarget)
 
 public OnClientDisconnect(iTarget)
 {
-	g_iTeam[iTarget] = 0;
+	g_iTeam[iTarget] = view_as<int>(TFTeam_Unassigned);
 	g_bWasBLU[iTarget] = false;
 	g_bSelected[iTarget] = false;
 	g_iKillCounter[iTarget] = 0;
