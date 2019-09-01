@@ -226,7 +226,7 @@ void IsLastRED()
 {
 	if( GetTeamClientCount(view_as<int>(TFTeam_Red)) == 1 )
 	{
-		for(i = 1; i <+ MaxClients; i++)
+		for(int i = 1; i <= MaxClients; i++)
 		{
 			if( IsClientInGame(i) && TF2_GetClientTeam(i) == TFTeam_Red )
 			{

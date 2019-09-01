@@ -751,16 +751,6 @@ public Action Timer_WinCheck(Handle timer)
 		int iTimeRemaining = g_iRoundTime - GetTime();
 		CPrintToChatAll("%t", "Round Time", iTimeRemaining);
 	}
-	if(GetTime() > g_iRoundTime)
-	{
-		// round ends here
-		// RED = 2 | BLU = 3
-		if(GetTeamClientCount(2) >= 1) // round ended with at least 1 RED player alive.
-		{
-			CPrintToChatAll("%t", "Win By Time");
-			EndRound(2);
-		}
-	}
 	
 	int iTime = GetRemainingTime();
 	switch( iTime )
@@ -773,6 +763,17 @@ public Action Timer_WinCheck(Handle timer)
 		case 3: EmitGameSoundToAll("Announcer.RoundEnds3seconds");
 		case 2: EmitGameSoundToAll("Announcer.RoundEnds2seconds");
 		case 1: EmitGameSoundToAll("Announcer.RoundEnds1seconds");
+	}
+	
+	if(GetTime() > g_iRoundTime)
+	{
+		// round ends here
+		// RED = 2 | BLU = 3
+		if(GetTeamClientCount(2) >= 1) // round ended with at least 1 RED player alive.
+		{
+			CPrintToChatAll("%t", "Win By Time");
+			EndRound(2);
+		}
 	}
 }
 
