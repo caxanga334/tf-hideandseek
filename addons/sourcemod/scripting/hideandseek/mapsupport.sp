@@ -3,13 +3,13 @@ int iRemoveDoors;
 
 char MapSupportFile[PLATFORM_MAX_PATH];
 
-stock MS_BuildPath()
+void MS_BuildPath()
 {
 	BuildPath(Path_SM, MapSupportFile, sizeof(MapSupportFile), "configs/hideandseek/map_settings.cfg");
 	MS_LoadConfig();
 }
 
-stock MS_LoadConfig()
+void MS_LoadConfig()
 {
 	// reset globals
 	iRemoveDoors = 0;
@@ -47,7 +47,7 @@ stock MS_LoadConfig()
 }
 
 /* Function to prepare the map for hide and seek */
-stock PrepareMap() {
+void PrepareMap() {
 	int i = -1;
 	while ((i = FindEntityByClassname(i, "trigger_capture_area")) != -1)
 	{

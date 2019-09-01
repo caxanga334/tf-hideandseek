@@ -8,7 +8,7 @@ bool bSpawnPointsBLU; // does the current map have spawn points?
 
 char g_strConfigFile[PLATFORM_MAX_PATH];
 
-stock SP_BuildPath()
+void SP_BuildPath()
 {
 	BuildPath(Path_SM, g_strConfigFile, sizeof(g_strConfigFile), "configs/hideandseek/spawnpoints.cfg");
 	array_bluspawns = new ArrayList(3);
@@ -16,7 +16,7 @@ stock SP_BuildPath()
 	SP_LoadConfig();
 }
 
-stock SP_LoadConfig()
+void SP_LoadConfig()
 {
 	char CurrentMap[MAX_NAME_LENGTH];
 	char CfgOrigin[16];
@@ -84,7 +84,7 @@ stock SP_LoadConfig()
 }
 
 // this functions teleports a player to a random origin from the config file
-stock SP_TeleportPlayer(int iClient, int iTeam)
+void SP_TeleportPlayer(int iClient, int iTeam)
 {
 	int iTarget;
 	float origin[3];

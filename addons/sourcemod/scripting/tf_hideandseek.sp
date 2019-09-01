@@ -12,8 +12,9 @@
 #include <SteamWorks>
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
+#include "hideandseek/functions.sp"
 
-#define PLUGIN_VERSION "0.0.5"
+#define PLUGIN_VERSION "0.0.6"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -137,7 +138,7 @@ public void OnPluginStart()
 	RegAdminCmd("sm_has_debug", Command_Debug, ADMFLAG_ROOT, "Print debug info");
 	
 	// convars
-	CreateConVar("sm_hideandseek_version", PLUGIN_VERSION, "Hide and Seek plugin version", FCVAR_NOTIFY);
+	CreateConVar("sm_hideandseek_version", PLUGIN_VERSION, "Hide and Seek plugin version", FCVAR_NOTIFY|FCVAR_SPONLY);
 	sm_has_round_time = CreateConVar( "sm_has_round_time", "180", "How low does the hide and seek round last? Base Time", FCVAR_NONE, true, 60.0, false);
 	sm_has_rt_per_player = CreateConVar( "sm_has_rt_per_player", "30", "Round Time to add per player connected to the server. 2 Players are ignored.", FCVAR_NONE, true, 0.0, false);
 	sm_has_round_time_cap = CreateConVar( "sm_has_round_time_cap", "600", "Maximum round time duration allowed in seconds.", FCVAR_NONE, true, 300.0, false);
@@ -359,20 +360,20 @@ public Action E_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if(g_iHASState == HAS_State_ACTIVE) {
 		// RED player died during while the round is active, move him/her to BLU.
 		if(iKiller >= 1) {
-			if(GetClientTeam(iClient) == _:TFTeam_Red && IsClientInGame(iKiller)) {
+			if(GetClientTeam(iClient) == view_as<int>(TFTeam_Red) && IsClientInGame(iKiller)) {
 				TF2_ChangeClientTeam(iClient, TFTeam_Blue);
 				g_iTeam[iClient] = 3;
 				g_iKillCounter[iKiller]++; // add 1 kill
 			}
 			
-			if(GetClientTeam(iClient) == _:TFTeam_Blue && GetClientTeam(iKiller) == _:TFTeam_Red && IsClientInGame(iKiller)) {
-			if(cvar_iRTKillReduction >= 1) {
+			if(GetClientTeam(iClient) == view_as<int>(TFTeam_Blue) && GetClientTeam(iKiller) == view_as<int>(TFTeam_Red) && IsClientInGame(iKiller)) {
+				if(cvar_iRTKillReduction >= 1) {
 					g_iRoundTime = g_iRoundTime - cvar_iRTKillReduction;
 				}
 			}			
 		}
 		else if(iKiller == 0 && GetRunningTime() > 15) {
-			TF2_ChangeClientTeam(iClient, TFTeam_Blue);
+			CreateTimer(0.1, Timer_MovetoBLU, iClient, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		CheckPlayers();
 	}
@@ -577,11 +578,11 @@ public Action ActiveRound(Handle timer)
 	{
 		if(IsClientInGame(i))
 		{
-			if(GetClientTeam(i) == _:TFTeam_Blue)
+			if(GetClientTeam(i) == view_as<int>(TFTeam_Blue))
 			{
 				CPrintToChat(i,"%t", "You Seek");// round start message
 			}
-			else if(GetClientTeam(i) == _:TFTeam_Red)
+			else if(GetClientTeam(i) == view_as<int>(TFTeam_Red))
 			{
 				CPrintToChat(i,"%t", "You Hide");// round start message
 			}
@@ -601,6 +602,8 @@ public Action ActiveRound(Handle timer)
 		}
 		g_iPSState = 0; // set state to 0
 	}
+	
+	return Plugin_Stop;
 }
 
 void EndRound(int iWinner)
@@ -644,7 +647,7 @@ void EndRound(int iWinner)
 					TIMERS
 *****************************************************/
 
-public Action:Timer_Announce(Handle:hTimer)
+public Action Timer_Announce(Handle timer)
 {
 	int msg = GetRandomInt(0,4);
 	if(msg == 1)
@@ -666,7 +669,7 @@ public Action:Timer_Announce(Handle:hTimer)
 	}
 }
 
-public Action:Timer_CheckForPlayers(Handle:hTimer)
+public Action Timer_CheckForPlayers(Handle timer)
 {
 	CheckPlayers();
 }
@@ -674,6 +677,7 @@ public Action:Timer_CheckForPlayers(Handle:hTimer)
 public Action Timer_RoundStart(Handle timer)
 {
 	StartNewRound();
+	return Plugin_Stop;
 }
 
 public Action Timer_UnfreezeBLU(Handle timer)
@@ -681,7 +685,7 @@ public Action Timer_UnfreezeBLU(Handle timer)
 	g_bBLUFrozen = false;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(i) && GetClientTeam(i) == _:TFTeam_Blue)
+		if(IsClientInGame(i) && GetClientTeam(i) == view_as<int>(TFTeam_Blue))
 		{
 			SetEntityMoveType(i, MOVETYPE_WALK);
 			CPrintToChat(i, "%t", "Unfrozen");
@@ -721,7 +725,7 @@ public Action Timer_SpawnCheck(Handle timer)
 	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && IsPlayerAlive(i) && !IsFakeClient(i) && GetClientTeam(i) == _:TFTeam_Red && GetRunningTime() > 30)
+			if (IsClientInGame(i) && IsPlayerAlive(i) && !IsFakeClient(i) && GetClientTeam(i) == view_as<int>(TFTeam_Red) && GetRunningTime() > 30)
 			{
 				if(TF2Spawn_IsClientInSpawn2(i))
 				{
@@ -744,6 +748,12 @@ public Action Timer_SpawnCheck(Handle timer)
 		}
 	}
 	return Plugin_Continue;
+}
+
+public Action Timer_MovetoBLU(Handle timer, any iClient)
+{
+	TF2_ChangeClientTeam(iClient, TFTeam_Blue);
+	return Plugin_Stop;
 }
 
 /****************************************************
@@ -814,7 +824,7 @@ int GetRandomPlayer()
 
 public void TF2Spawn_EnterSpawn( iClient, iEntity )
 {
-	if(g_iHASState == HAS_State_ACTIVE && IsClientInGame(iClient) && IsPlayerAlive(iClient) && !IsFakeClient(iClient) && GetClientTeam(iClient) == _:TFTeam_Red)
+	if(g_iHASState == HAS_State_ACTIVE && IsClientInGame(iClient) && IsPlayerAlive(iClient) && !IsFakeClient(iClient) && GetClientTeam(iClient) == view_as<int>(TFTeam_Red))
 	{
 		if(g_iCampStrikes[iClient] > cvar_iMaxCampStrikes) // player is a camper
 		{
@@ -906,7 +916,7 @@ void FreezePlayers() {
 		
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if(IsClientInGame(i) && GetClientTeam(i) == _:TFTeam_Blue)
+			if(IsClientInGame(i) && GetClientTeam(i) == view_as<int>(TFTeam_Blue))
 			{
 				SetEntityMoveType(i, MOVETYPE_NONE);
 				CPrintToChat(i,"%t", "BLU Frozen", iFreezeTime);
@@ -953,182 +963,10 @@ int GetRunningTime()
 				WEAPON FUNCTIONS
 *****************************************************/
 
-void PrepareWeapons(int iClient)
-{
-	int iPrimary, iSecondary;
-	TFTeam iTeam = TF2_GetClientTeam(iClient);
-	TFClassType iClass = TF2_GetPlayerClass( iClient );
-	char weaponAttribs[256];
-	//new iIndex; // item definition index
-	int iWeapon; // weapon entity index
-	
-	if(iTeam == TFTeam_Red)
-	{
-		// remove wearables
-		iPrimary = TF2_GetPlayerLoadoutSlot(iClient, TF2LoadoutSlot_Primary, true);
-		if(iPrimary != -1)
-		{
-			TF2_RemovePlayerWearable(iClient, iPrimary);
-		}
-		iSecondary = TF2_GetPlayerLoadoutSlot(iClient, TF2LoadoutSlot_Secondary, true);
-		if(iSecondary != -1)
-		{
-			TF2_RemovePlayerWearable(iClient, iSecondary);
-		}
-		
-		TF2_RemoveAllWeapons(iClient);
-		
-		switch( iClass )
-		{
-			case TFClass_Scout: // cleaver causes knockback, slow recharge
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "522 ; 1 ; 278 ; 4.0");
-				SpawnWeapon( iClient, "tf_weapon_cleaver", 812, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
-				SpawnWeapon( iClient, "tf_weapon_bat", 0, 1, 0, weaponAttribs, false);
-				CPrintToChat( iClient, "%t", "class red scout");
-			}
-			case TFClass_Soldier: // bonuses: Move speed increases as the user becomes injured, Damage increases as the user becomes injured 
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.40 ; 235 ; 2 ; 115 ; 1");
-				SpawnWeapon( iClient, "tf_weapon_shovel", 447, 1, 0, weaponAttribs, false);
-			}
-			case TFClass_Pyro: // slows down enemy on hit
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25 ; 182 ; 3");
-				SpawnWeapon( iClient, "tf_weapon_fireaxe", 348, 1, 0, weaponAttribs, false); // Sharpened Volcano Fragment
-				CPrintToChat( iClient, "%t", "class red pyro");
-			}
-			case TFClass_DemoMan:
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "249 ; 0.3"); // slow recharge shield
-				SpawnWeapon( iClient, "tf_wearable_demoshield", 131, 1, 0, weaponAttribs, true);
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
-				SpawnWeapon( iClient, "tf_weapon_bottle", 1, 1, 0, weaponAttribs, false);
-			}
-			case TFClass_Heavy: // reduced damage from ranged sources
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "874 ; 2.0");
-				SpawnWeapon( iClient, "tf_weapon_lunchbox", 42, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.5 ; 205 ; 0.2 ; 737 ; 3");
-				SpawnWeapon( iClient, "tf_weapon_fists", 656, 1, 0, weaponAttribs, false);
-			}
-			case TFClass_Engineer:
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
-				SpawnWeapon( iClient, "tf_weapon_robot_arm", 142, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "287 ; 0.25 ; 113 ; 10 ; 286 ; 0.4 ; 790 ; 4.0"); // -75% sentry gun damage, +10 metal every 5 sec, -60% building health, teleport costs 200 metal
-				SpawnWeapon( iClient, "tf_weapon_pda_engineer_build", 25, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "153 ; 1");
-				SpawnWeapon( iClient, "tf_weapon_pda_engineer_destroy", 26, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "153 ; 1");
-				SpawnWeapon( iClient, "tf_weapon_builder", 28, 1, 0, weaponAttribs, false);
-			}
-			case TFClass_Medic:
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25 ; 129 ; -2"); // reduced health regen
-				SpawnWeapon( iClient, "tf_weapon_bonesaw", 304, 1, 0, weaponAttribs, false);
-			}
-			case TFClass_Sniper:
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "278 ; 2.0"); // 100% slow recharge speed
-				SpawnWeapon( iClient, "tf_weapon_jar", 58, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "1 ; 0.25");
-				SpawnWeapon( iClient, "tf_weapon_club", 3, 1, 0, weaponAttribs, false);
-				CPrintToChat( iClient, "%t", "class red sniper");
-			}
-			case TFClass_Spy:
-			{
-				Format(weaponAttribs, sizeof(weaponAttribs), "156 ; 1 ; 154 ; 1"); // silent killer, disguise on backstab
-				SpawnWeapon( iClient, "tf_weapon_knife", 4, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "426 ; 0.0 ; 428 ; 2.0"); // -100% damage, + 100% health
-				SpawnWeapon( iClient, "tf_weapon_builder", 735, 1, 0, weaponAttribs, false);
-				Format(weaponAttribs, sizeof(weaponAttribs), "35 ; 0.25 ; 729 ; 0.8 ; 82 ; 1.4 ; 728 ; 1 ; 160 ; 1 ; 159 ; 1"); // -75% slower cloak regen, +40% cloak consume rate, +1 second blink time, silent uncloak
-				SpawnWeapon( iClient, "tf_weapon_invis", 30, 1, 0, weaponAttribs, false); // No cloak meter from ammo boxes when invisible, -20% cloak meter from ammo boxes
-			}
-		}
-		// global RED attributes
-		iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Melee);
-		if(iWeapon >= 1)
-		{
-			TF2Attrib_SetByName(iWeapon, "health from packs decreased", 0.50);
-			TF2Attrib_SetByName(iWeapon, "restore health on kill", 100.0);
-		}
-	}
-	else if(iTeam == TFTeam_Blue)
-	{
-		// global ammo regen for primary weapons
-		iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
-		if(iWeapon >= 1)
-		{
-			TF2Attrib_SetByName(iWeapon, "ammo regen", 0.25);
-			TF2Attrib_SetByName(iWeapon, "health regen", 1.0);
-			TF2Attrib_SetByName(iWeapon, "critboost on kill", 8.0);
-		}
-		switch( iClass )
-		{
-			case TFClass_Scout:
-			{
-				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
-				if(iWeapon >= 1)
-				{
-					TF2Attrib_SetByName(iWeapon, "slow enemy on hit major", 1.0);
-					TF2Attrib_SetByName(iWeapon, "halloween increased jump height", 1.4);
-				}
-			}
-			case TFClass_Soldier:
-			{
-				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
-				if(iWeapon >= 1)
-				{
-					TF2Attrib_SetByName(iWeapon, "rocket specialist", 2.0);
-				}
-			}
-			case TFClass_Pyro:
-			{
-				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
-				if(iWeapon >= 1)
-				{
-					TF2Attrib_SetByName(iWeapon, "weapon burn time increased", 1.8);
-					TF2Attrib_SetByName(iWeapon, "weapon burn dmg increased", 1.4);
-				}
-			}
-/* 			case TFClass_DemoMan:
-			{
-		
-			}
-			case TFClass_Heavy:
-			{
-			
-			} */
-			case TFClass_Engineer:
-			{
-				iWeapon = GetPlayerWeaponSlot(iClient, TFWepSlot_PDA_Build);
-				if(iWeapon >= 1)
-				{
-					TF2Attrib_SetByName(iWeapon, "metal regen", 20.0);
-				}
-			}
-/* 			case TFClass_Medic:
-			{
-
-			}
-			case TFClass_Sniper:
-			{
-
-			}
-			case TFClass_Spy:
-			{
-
-			} */
-		}
-	}
-}
-
 // stun players when they get jarated
-public TF2_OnConditionAdded(client, TFCond:cond)
+public TF2_OnConditionAdded(int client, TFCond cond)
 {
-	if(GetClientTeam(client) == _:TFTeam_Blue && g_iHASState == HAS_State_ACTIVE && cond == TFCond_Jarated)
+	if(GetClientTeam(client) == view_as<int>(TFTeam_Blue) && g_iHASState == HAS_State_ACTIVE && cond == TFCond_Jarated)
 	{
 		TF2_StunPlayer(client, 5.0, 0.0, TF_STUNFLAG_LIMITMOVEMENT|TF_STUNFLAG_BONKSTUCK|TF_STUNFLAG_THIRDPERSON);
 	}
@@ -1142,40 +980,3 @@ public TF2_OnConditionAdded(client, TFCond:cond)
         SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
     }
 } */
-
-stock SpawnWeapon(client,String:name[],index,level,qual,String:att[], bool:bWearable = false)
-{
-	Handle hWeapon = TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION|PRESERVE_ATTRIBUTES);
-	TF2Items_SetClassname(hWeapon, name);
-	TF2Items_SetItemIndex(hWeapon, index);
-	TF2Items_SetLevel(hWeapon, level);
-	TF2Items_SetQuality(hWeapon, qual);
-	char atts[32][32];
-	int count = ExplodeString(att, " ; ", atts, 32, 32);
-	if (count > 0)
-	{
-		TF2Items_SetNumAttributes(hWeapon, count/2);
-		int i2 = 0;
-		for (int i = 0; i < count; i+=2)
-		{
-			TF2Items_SetAttribute(hWeapon, i2, StringToInt(atts[i]), StringToFloat(atts[i+1]));
-			i2++;
-		}
-	}
-	else
-		TF2Items_SetNumAttributes(hWeapon, 0);
-	if (hWeapon==INVALID_HANDLE)
-		return -1;
-	int entity = TF2Items_GiveNamedItem(client, hWeapon);
-	CloseHandle(hWeapon);
-	if( IsValidEdict( entity ) )
-	{
-		if( bWearable )
-		{
-			TF2_EquipPlayerWearable(client, entity);
-		}
-		else
-			EquipPlayerWeapon( client, entity );
-	}
-	return entity;
-}
