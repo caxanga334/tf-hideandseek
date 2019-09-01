@@ -30,7 +30,7 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 
 # Dependencies
 * [TF2Items](https://forums.alliedmods.net/showthread.php?p=1050170)
-* [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556)
 * [TF2Attributes](https://github.com/FlaminSarge/tf2attributes/releases)
 * [TF2 Is Player In Spawn?](https://forums.alliedmods.net/showthread.php?p=2196313)
 * [TF2Wearables](https://github.com/nosoop/sourcemod-tf2wearables)
+* [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556) (Optional)
