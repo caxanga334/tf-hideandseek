@@ -127,6 +127,8 @@ void MS_AddTime()
 		if(IsValidEntity(i))
 		{
 			SetVariantInt(9999);
+			AcceptEntityInput(i, "SetMaxTime");
+			SetVariantInt(9999);
 			AcceptEntityInput(i, "AddTime");
 		} 
 	}

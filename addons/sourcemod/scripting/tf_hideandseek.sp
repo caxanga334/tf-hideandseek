@@ -15,7 +15,7 @@
 #include "hideandseek/spawnpoints.sp"
 #include "hideandseek/functions.sp"
 
-#define PLUGIN_VERSION "0.0.6"
+#define PLUGIN_VERSION "0.0.7"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -640,7 +640,7 @@ public Action ActiveRound(Handle timer)
 	FreezePlayers();
 	int iRoundDuration = GetRemainingTime();
 	CPrintToChatAll("%t", "Round Start", iRoundDuration);// round start message
-	MS_AddTime();
+	CreateTimer(15.0, Timer_SetTeamRoundTimer);
 	
 	if(g_iPSState == 1) // reset g_bWasBLU
 	{
@@ -836,6 +836,12 @@ public Action Timer_BuildObject(Handle timer, any index)
 		}
 	}
 	
+	return Plugin_Stop;
+}
+
+public Action Timer_SetTeamRoundTimer(Handle timer)
+{
+	MS_AddTime();
 	return Plugin_Stop;
 }
 
