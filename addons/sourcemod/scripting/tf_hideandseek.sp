@@ -141,7 +141,7 @@ public void OnPluginStart()
 	RegAdminCmd("sm_has_debug", Command_Debug, ADMFLAG_ROOT, "Print debug info");
 	
 	// convars
-	CreateConVar("sm_hideandseek_version", PLUGIN_VERSION, "Hide and Seek plugin version", FCVAR_NOTIFY|FCVAR_SPONLY);
+	CreateConVar("sm_hideandseek_version", PLUGIN_VERSION, "Hide and Seek plugin version", FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	sm_has_round_time = CreateConVar( "sm_has_round_time", "180", "How low does the hide and seek round last? Base Time", FCVAR_NONE, true, 60.0, false);
 	sm_has_rt_per_player = CreateConVar( "sm_has_rt_per_player", "30", "Round Time to add per player connected to the server. 2 Players are ignored.", FCVAR_NONE, true, 0.0, false);
 	sm_has_round_time_cap = CreateConVar( "sm_has_round_time_cap", "600", "Maximum round time duration allowed in seconds.", FCVAR_NONE, true, 300.0, false);
