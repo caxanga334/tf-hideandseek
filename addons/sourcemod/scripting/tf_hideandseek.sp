@@ -54,6 +54,7 @@ ConVar sm_has_blu_ratio;
 ConVar mp_scrambleteams_auto;
 ConVar mp_autoteambalance;
 ConVar mp_teams_unbalance_limit;
+ConVar c_svTag; // server tags
 
 // =========
 int cvar_iRoundTime;
@@ -187,6 +188,15 @@ public void OnPluginStart()
 	{
 		mp_scrambleteams_auto.AddChangeHook(OnScrambleTeamChanged);
 	}
+	
+	c_svTag = FindConVar("sv_tags");
+	
+	// convar hooks
+	if( c_svTag != null )
+	{
+		c_svTag.AddChangeHook(OnTagsChanged);
+	}
+	
 	AutoExecConfig(true, "plugin.hideandseek");
 }
 
@@ -197,6 +207,7 @@ public void OnMapStart()
 	MS_LoadConfig();
 	g_iPSState = 0; // state 0, nobody joined BLU
 	g_iHASState = HAS_State_NONE;
+	AddPluginTag("HAS");
 }
 
 public void TF2_OnWaitingForPlayersStart() {
@@ -257,6 +268,10 @@ public void OnTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue
 	}
 }
 
+public void OnTagsChanged(ConVar convar, char[] oldValue, char[] newValue)
+{
+	AddPluginTag("HAS");
+}
 
 /****************************************************
 					COMMANDS
@@ -980,3 +995,18 @@ public TF2_OnConditionAdded(int client, TFCond cond)
         SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
     }
 } */
+
+// add plugin tag to sv_tags
+void AddPluginTag(const char[] tag)
+{
+	char tags[255];
+	c_svTag.GetString(tags, sizeof(tags));
+
+	if (!(StrContains(tags, tag, false)>-1))
+	{
+		char newTags[255];
+		Format(newTags, sizeof(newTags), "%s,%s", tags, tag);
+		c_svTag.SetString(newTags, _, true);
+		c_svTag.GetString(tags, sizeof(tags));
+	}
+}
