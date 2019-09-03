@@ -113,7 +113,7 @@ void PrepareMap() {
 		{
 			if(IsValidEntity(i))
 			{
-				AcceptEntityInput(i, "Kill");
+				AcceptEntityInput(i, "KillHierarchy");
 			} 
 		}
 	}
