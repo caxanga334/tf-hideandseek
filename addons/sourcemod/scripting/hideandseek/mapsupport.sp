@@ -89,8 +89,11 @@ void PrepareMap() {
 	{
 		if(IsValidEntity(i))
 		{
-			SetVariantInt(5);
-			AcceptEntityInput(i, "SetSetupTime");
+			if( GetEntProp(i, Prop_Send, "m_nSetupTimeLength") > 0 )
+			{
+				SetVariantInt(5);
+				AcceptEntityInput(i, "SetSetupTime");
+			}
 		} 
 	}
 	while ((i = FindEntityByClassname(i, "func_respawnroomvisualizer")) != -1)
