@@ -14,6 +14,7 @@
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
 #include "hideandseek/functions.sp"
+#include "hideandseek/inventory.sp"
 
 #define PLUGIN_VERSION "0.0.7"
 #define PLUGIN_STATE "ALPHA"
@@ -222,6 +223,17 @@ public void OnMapStart()
 	AddPluginTag("HAS");
 	
 	// Precache
+	// game sounds
+	PrecacheScriptSound("Announcer.AM_LastManAlive01");
+	PrecacheScriptSound("announcer_ends_60sec");
+	PrecacheScriptSound("announcer_ends_30sec");
+	PrecacheScriptSound("announcer_ends_10sec");
+	PrecacheScriptSound("announcer_ends_5sec");
+	PrecacheScriptSound("announcer_ends_4sec");
+	PrecacheScriptSound("announcer_ends_3sec");
+	PrecacheScriptSound("announcer_ends_2sec");
+	PrecacheScriptSound("announcer_ends_1sec");
+	// sounds
 	PrecacheSound("vo/announcer_AM_LastManAlive01.mp3");
 	PrecacheSound("vo/announcer_ends_60sec.mp3");
 	PrecacheSound("vo/announcer_ends_30sec.mp3");
