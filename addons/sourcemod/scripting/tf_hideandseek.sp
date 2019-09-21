@@ -16,7 +16,7 @@
 #include "hideandseek/functions.sp"
 #include "hideandseek/inventory.sp"
 
-#define PLUGIN_VERSION "0.0.7"
+#define PLUGIN_VERSION "0.0.8"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -96,7 +96,7 @@ public Plugin myinfo =
 	author = "caxanga334",
 	description = "Hide and Seek plugin for TF2",
 	version = PLUGIN_VERSION,
-	url = "https://github.com/caxanga334/"
+	url = "https://github.com/caxanga334/tf-hideandseek"
 }
 
 stock APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -228,21 +228,11 @@ public void OnMapStart()
 	PrecacheScriptSound("announcer_ends_60sec");
 	PrecacheScriptSound("announcer_ends_30sec");
 	PrecacheScriptSound("announcer_ends_10sec");
-	PrecacheScriptSound("announcer_ends_5sec");
-	PrecacheScriptSound("announcer_ends_4sec");
-	PrecacheScriptSound("announcer_ends_3sec");
-	PrecacheScriptSound("announcer_ends_2sec");
-	PrecacheScriptSound("announcer_ends_1sec");
 	// sounds
 	PrecacheSound("vo/announcer_AM_LastManAlive01.mp3");
 	PrecacheSound("vo/announcer_ends_60sec.mp3");
 	PrecacheSound("vo/announcer_ends_30sec.mp3");
 	PrecacheSound("vo/announcer_ends_10sec.mp3");
-	PrecacheSound("vo/announcer_ends_5sec.mp3");
-	PrecacheSound("vo/announcer_ends_4sec.mp");
-	PrecacheSound("vo/announcer_ends_3sec.mp3");
-	PrecacheSound("vo/announcer_ends_2sec.mp");
-	PrecacheSound("vo/announcer_ends_1sec.mp");
 }
 
 public void TF2_OnWaitingForPlayersStart() {
@@ -423,7 +413,8 @@ public Action E_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 			}			
 		}
 		else if(iKiller == 0 && GetRunningTime() > 15) {
-			CreateTimer(0.1, Timer_MovetoBLU, iClient, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(2.0, Timer_MovetoBLU, iClient, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(3.0, Timer_IsLastRED, iClient, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		CheckPlayers();
 	}
@@ -770,11 +761,6 @@ public Action Timer_WinCheck(Handle timer)
 		case 60: EmitGameSoundToAll("Announcer.RoundEnds60seconds");
 		case 30: EmitGameSoundToAll("Announcer.RoundEnds30seconds");
 		case 10: EmitGameSoundToAll("Announcer.RoundEnds10seconds");
-		case 5: EmitGameSoundToAll("Announcer.RoundEnds5seconds");
-		case 4: EmitGameSoundToAll("Announcer.RoundEnds4seconds");
-		case 3: EmitGameSoundToAll("Announcer.RoundEnds3seconds");
-		case 2: EmitGameSoundToAll("Announcer.RoundEnds2seconds");
-		case 1: EmitGameSoundToAll("Announcer.RoundEnds1seconds");
 	}
 	
 	if(GetTime() > g_iRoundTime)
@@ -827,6 +813,11 @@ public Action Timer_SpawnCheck(Handle timer)
 public Action Timer_MovetoBLU(Handle timer, any iClient)
 {
 	TF2_ChangeClientTeam(iClient, TFTeam_Blue);
+	return Plugin_Stop;
+}
+
+public Action Timer_IsLastRED(Handle timer, any iClient)
+{
 	IsLastRED();
 	return Plugin_Stop;
 }
@@ -1069,7 +1060,7 @@ public TF2_OnConditionAdded(int client, TFCond cond)
 {
 	if(GetClientTeam(client) == view_as<int>(TFTeam_Blue) && g_iHASState == HAS_State_ACTIVE && cond == TFCond_Jarated)
 	{
-		TF2_StunPlayer(client, 5.0, 0.0, TF_STUNFLAG_LIMITMOVEMENT|TF_STUNFLAG_BONKSTUCK|TF_STUNFLAG_THIRDPERSON);
+		TF2_StunPlayer(client, 8.0, 0.8, TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_SOUND);
 	}
 }
 
