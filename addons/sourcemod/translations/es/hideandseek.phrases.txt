@@ -107,6 +107,6 @@
 	}
 	"class red sniper"
 	{
-		"es"	"{green}[HABILIDAD ESPECIAL]{cyan} Jarate stuns enemies for 5 seconds."
+		"es"	"{green}[HABILIDAD ESPECIAL]{cyan} Jarate stuns enemies for 8 seconds."
 	}
 }
