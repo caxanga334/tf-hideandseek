@@ -247,6 +247,19 @@ public void TF2_OnWaitingForPlayersEnd() {
 	LogMessage("TF2 Waiting For Players ended.");
 }
 
+public void OnGameFrame() {
+	for(int i = 0; i <= MaxClients; i++)
+	{
+		if( IsValidClient(i) )
+		{
+			if( IsPlayerAlive(i) && TF2_GetClientTeam(i) == TFTeam_Red && TF2_IsPlayerInCondition(i, TFCond_DefenseBuffed) )
+			{
+				TF2_AddCondition(i, TFCond_UberchargedCanteen, 0.100);
+			}
+		}
+	}	
+}
+
 /****************************************************
 				CONVAR FUNCTIONS
 *****************************************************/
@@ -750,6 +763,7 @@ public Action Timer_UnfreezeBLU(Handle timer)
 public Action Timer_Second(Handle timer)
 {
 	CheckPlayers();
+	HS_RED_ChargeBanner();
 	if((GetGameTime() > flLastTimeAnn) && cvar_flTimeAnnCooldown > 0)
 	{
 		flLastTimeAnn = GetGameTime() + cvar_flTimeAnnCooldown;

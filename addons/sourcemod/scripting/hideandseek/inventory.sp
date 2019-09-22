@@ -84,7 +84,9 @@ void PrepareWeapons(int iClient)
 			}
 			case TFClass_Soldier: // to do: soldier
 			{
-				SpawnWeapon( iClient, "tf_weapon_shovel", 6, 1, 0, false);
+				SpawnWeapon( iClient, "tf_weapon_buff_item", 226, 1, 0, false);
+				iWeapon = SpawnWeapon( iClient, "tf_weapon_shovel", 6, 1, 0, false);
+				TF2Attrib_SetByName(iWeapon, "damage penalty", 0.25);
 			}
 			case TFClass_Pyro: // slows down enemy on hit
 			{
@@ -214,6 +216,23 @@ void PrepareWeapons(int iClient)
 			{
 
 			} */
+		}
+	}
+}
+
+// charges RED soldier's banners
+void HS_RED_ChargeBanner(float flAmount = 1.0)
+{
+	for(int i = 0; i <= MaxClients; i++)
+	{
+		if( IsValidClient(i) )
+		{
+			if( IsPlayerAlive(i) && TF2_GetClientTeam(i) == TFTeam_Red && TF2_GetPlayerClass(i) == TFClass_Soldier )
+			{
+				float flCharge = GetEntPropFloat(i, Prop_Send, "m_flRageMeter");
+				flCharge += flAmount;
+				SetEntPropFloat(i, Prop_Send, "m_flRageMeter", flCharge);
+			}
 		}
 	}
 }
