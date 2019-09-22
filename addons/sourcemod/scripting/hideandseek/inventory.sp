@@ -229,9 +229,12 @@ void HS_RED_ChargeBanner(float flAmount = 1.0)
 		{
 			if( IsPlayerAlive(i) && TF2_GetClientTeam(i) == TFTeam_Red && TF2_GetPlayerClass(i) == TFClass_Soldier )
 			{
-				float flCharge = GetEntPropFloat(i, Prop_Send, "m_flRageMeter");
-				flCharge += flAmount;
-				SetEntPropFloat(i, Prop_Send, "m_flRageMeter", flCharge);
+				if( !TF2_IsPlayerInCondition(i, TFCond_DefenseBuffed ) )
+				{
+					float flCharge = GetEntPropFloat(i, Prop_Send, "m_flRageMeter");
+					flCharge += flAmount;
+					SetEntPropFloat(i, Prop_Send, "m_flRageMeter", flCharge);
+				}
 			}
 		}
 	}
