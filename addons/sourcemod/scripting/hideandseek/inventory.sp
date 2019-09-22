@@ -223,7 +223,7 @@ void PrepareWeapons(int iClient)
 // charges RED soldier's banners
 void HS_RED_ChargeBanner(float flAmount = 1.0)
 {
-	for(int i = 0; i <= MaxClients; i++)
+	for(int i = 1; i <= MaxClients; i++)
 	{
 		if( IsValidClient(i) )
 		{
