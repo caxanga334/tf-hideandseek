@@ -250,7 +250,7 @@ public void TF2_OnWaitingForPlayersEnd() {
 public void OnGameFrame() {
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if( IsValidClient(i) %% g_iHASState == HAS_State_ACTIVE )
+		if( IsValidClient(i) && g_iHASState == HAS_State_ACTIVE )
 		{
 			if( IsPlayerAlive(i) && TF2_GetClientTeam(i) == TFTeam_Red && TF2_IsPlayerInCondition(i, TFCond_DefenseBuffed) )
 			{
