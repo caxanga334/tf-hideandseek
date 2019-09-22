@@ -76,8 +76,8 @@ void PrepareWeapons(int iClient)
 			{
 				iWeapon = SpawnWeapon( iClient, "tf_weapon_cleaver", 812, 1, 0, false);
 				TF2Attrib_SetByName(iWeapon, "effect bar recharge rate increased", 4.5);
-				TF2Attrib_SetByName(iWeapon, "apply look velocity on damage", 100.0);
-				TF2Attrib_SetByName(iWeapon, "apply z velocity on damage", 100.0);
+				TF2Attrib_SetByName(iWeapon, "apply look velocity on damage", 250.0);
+				TF2Attrib_SetByName(iWeapon, "apply z velocity on damage", 250.0);
 				iWeapon = SpawnWeapon( iClient, "tf_weapon_bat", 0, 1, 0, false);
 				TF2Attrib_SetByName(iWeapon, "damage penalty", 0.25);
 				CPrintToChat( iClient, "%t", "class red scout");
@@ -170,7 +170,6 @@ void PrepareWeapons(int iClient)
 				iWeapon = GetPlayerWeaponSlot(iClient, TFWeaponSlot_Primary);
 				if(iWeapon >= 1)
 				{
-					TF2Attrib_SetByName(iWeapon, "slow enemy on hit major", 1.0);
 					TF2Attrib_SetByName(iWeapon, "halloween increased jump height", 1.4);
 				}
 			}

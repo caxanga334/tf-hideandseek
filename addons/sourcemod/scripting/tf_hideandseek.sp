@@ -6,9 +6,11 @@
 #include <tf2_isPlayerInSpawn>
 #include <tf2wearables>
 #include <morecolors>
+#include <caxanga334>
 #define REQUIRE_EXTENSIONS
 #define AUTOLOAD_EXTENSIONS
 #include <tf2items>
+#include <sdkhooks>
 #undef REQUIRE_EXTENSIONS
 #include <SteamWorks>
 #include "hideandseek/mapsupport.sp"
@@ -16,7 +18,7 @@
 #include "hideandseek/functions.sp"
 #include "hideandseek/inventory.sp"
 
-#define PLUGIN_VERSION "0.0.8"
+#define PLUGIN_VERSION "0.0.9"
 #define PLUGIN_STATE "ALPHA"
 
 /********BOOLEANS********/
@@ -40,7 +42,7 @@ float flLastTimeAnn = 0.0;
 
 
 /********HANDLES********/
-Handle HT_WinCheck;
+Handle HT_Second;
 Handle HT_CampCheck;
 
 /********CONVARS********/
@@ -609,17 +611,17 @@ public Action ActiveRound(Handle timer)
 		LogMessage("WARNING: ActiveRound was called with 0 players on BLU.");
 	}
 	// Round Timers
-	if(HT_WinCheck != INVALID_HANDLE)
+	if(HT_Second != INVALID_HANDLE)
 	{
-		KillTimer(HT_WinCheck);
-		HT_WinCheck = INVALID_HANDLE;
+		KillTimer(HT_Second);
+		HT_Second = INVALID_HANDLE;
 	}
 	if(HT_CampCheck != INVALID_HANDLE)
 	{
 		KillTimer(HT_CampCheck);
 		HT_CampCheck = INVALID_HANDLE;
 	}
-	HT_WinCheck = CreateTimer(1.0, Timer_WinCheck, _, TIMER_REPEAT); // timed check to see if any team won
+	HT_Second = CreateTimer(1.0, Timer_Second, _, TIMER_REPEAT); // timed check to see if any team won
 	HT_CampCheck = CreateTimer(8.0, Timer_SpawnCheck, _, TIMER_REPEAT); // check for players camping inside spawn
 	// End Round Timers
 
@@ -659,10 +661,10 @@ public Action ActiveRound(Handle timer)
 
 void EndRound(int iWinner)
 {
-	if(HT_WinCheck != INVALID_HANDLE)
+	if(HT_Second != INVALID_HANDLE)
 	{
-		KillTimer(HT_WinCheck);
-		HT_WinCheck = INVALID_HANDLE;
+		KillTimer(HT_Second);
+		HT_Second = INVALID_HANDLE;
 	}
 	if(HT_CampCheck != INVALID_HANDLE)
 	{
@@ -745,7 +747,7 @@ public Action Timer_UnfreezeBLU(Handle timer)
 	LogMessage("BLU Players unfrozen.");
 }
 
-public Action Timer_WinCheck(Handle timer)
+public Action Timer_Second(Handle timer)
 {
 	CheckPlayers();
 	if((GetGameTime() > flLastTimeAnn) && cvar_flTimeAnnCooldown > 0)
@@ -852,7 +854,7 @@ public Action Timer_SetTeamRoundTimer(Handle timer)
 				PLAYER FUNCTIONS
 *****************************************************/
 
-public OnClientConnected(iTarget)
+public void OnClientConnected(iTarget)
 {
 	if(g_iHASState == HAS_State_ACTIVE)
 	{
@@ -863,13 +865,33 @@ public OnClientConnected(iTarget)
 	}
 }
 
-public OnClientDisconnect(iTarget)
+public void OnClientPutInServer(client)
+{
+	if( !IsFakeClient(client) )
+		SDKHook(client, SDKHook_OnTakeDamage, OnClientTakeDamage);
+}
+
+public void OnClientDisconnect(iTarget)
 {
 	g_iTeam[iTarget] = view_as<int>(TFTeam_Unassigned);
 	g_bWasBLU[iTarget] = false;
 	g_bSelected[iTarget] = false;
 	g_iKillCounter[iTarget] = 0;
 	CheckPlayers();
+}
+
+public Action OnClientTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3])
+{
+	if( IsValidClient(victim) && IsValidClient(attacker) )
+	{
+		if( TF2_GetClientTeam(victim) == TFTeam_Red && TF2_GetClientTeam(attacker) == TFTeam_Blue )
+		{
+			if( TF2_GetPlayerClass(victim) == TFClass_Scout )
+				TF2_StunPlayer(victim, 0.333, 0.5, TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT);
+		}
+	}
+	
+	return Plugin_Continue;
 }
 
 // selects a random player to join BLU
