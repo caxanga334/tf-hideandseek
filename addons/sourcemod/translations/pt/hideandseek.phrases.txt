@@ -107,6 +107,6 @@
 	}
 	"class red sniper"
 	{
-		"pt"	"{green}[HABILIDADE ESPECIAL]{cyan} Jarratê causa atordoamento por 5 segundos em inimigos."
+		"pt"	"{green}[HABILIDADE ESPECIAL]{cyan} Jarratê causa atordoamento por 8 segundos em inimigos."
 	}
 }
