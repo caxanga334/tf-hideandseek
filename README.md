@@ -13,7 +13,7 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 *Objective*: RED must survive until the round ends. BLU wins by killing all RED players.
 
 ## Features
-* Automatic team management 
+* Automatic team management
 * Dynamic round time
 * Add custom spawn points to maps
 * Supported maps (confirmed): CP,CTF,PL
@@ -36,5 +36,4 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 * [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556) (Optional)
 
 # Contact
-* [Steam](http://steamcommunity.com/profiles/76561198053992136)
-* Discord: Anonymous Player#4908
+* [Discord](https://discord.gg/cSdu8Uf)
