@@ -53,8 +53,8 @@
 	}
 	"Plugin Version"
 	{
-		"#format"	"{1:s},{2:s}"
-		"pt"	"{aqua}Você está jogando Hide and Seek versão {1} {2}"
+		"#format"	"{1:s}"
+		"pt"	"{aqua}Você está jogando Hide and Seek versão {1}"
 	}
 	"BLU Frozen"
 	{

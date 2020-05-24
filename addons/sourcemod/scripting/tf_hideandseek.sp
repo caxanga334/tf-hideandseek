@@ -5,7 +5,7 @@
 #include <tf2attributes>
 #include <tf2_isPlayerInSpawn>
 #include <tf2wearables>
-#include <morecolors>
+#include <multicolors>
 #include <caxanga334>
 #define REQUIRE_EXTENSIONS
 #define AUTOLOAD_EXTENSIONS
@@ -15,11 +15,9 @@
 #include <SteamWorks>
 #include "hideandseek/mapsupport.sp"
 #include "hideandseek/spawnpoints.sp"
-#include "hideandseek/functions.sp"
 #include "hideandseek/inventory.sp"
 
-#define PLUGIN_VERSION "0.0.9"
-#define PLUGIN_STATE "ALPHA"
+#define PLUGIN_VERSION "1.0.0"
 
 /********BOOLEANS********/
 bool g_bBLUFrozen; // Is BLU team frozen?
@@ -34,9 +32,13 @@ int g_iCampStrikes[MAXPLAYERS + 1]; // how many camp strikes players received
 int g_iKillCounter[MAXPLAYERS + 1];
 int g_iPSState; // BLU selection state
 int g_iHASState; // game state
+int cvar_iRoundTime;
+int cvar_iMaxCampStrikes;
+int cvar_iRTKillReduction;
 
 /********FLOATS********/
 float flLastTimeAnn = 0.0;
+float cvar_flTimeAnnCooldown;
 
 /********CHAR********/
 
@@ -54,17 +56,14 @@ ConVar sm_has_camp_strikes;
 ConVar sm_has_time_remaining;
 ConVar sm_has_freeze_duration;
 ConVar sm_has_blu_ratio;
+ConVar sm_has_enabled;
+
 /********GAMECVARS********/
 ConVar mp_scrambleteams_auto;
 ConVar mp_autoteambalance;
 ConVar mp_teams_unbalance_limit;
 ConVar c_svTag; // server tags
 
-// =========
-int cvar_iRoundTime;
-int cvar_iMaxCampStrikes;
-int cvar_iRTKillReduction;
-float cvar_flTimeAnnCooldown;
 
 // Better TF2 Weapon Loadout Slots
 enum
@@ -94,9 +93,9 @@ enum
  
 public Plugin myinfo =
 {
-	name = "[TF2] Hide and Seek",
+	name = "[TF2] Simple Hide and Seek",
 	author = "caxanga334",
-	description = "Hide and Seek plugin for TF2",
+	description = "A simple Hide and Seek plugin for TF2",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/caxanga334/tf-hideandseek"
 }
@@ -120,12 +119,6 @@ public void OnPluginStart()
 {	
 	SP_BuildPath();
 	MS_BuildPath();
-	
-	HookEvent( "player_spawn", E_PlayerSpawn );
-	HookEvent( "player_death", E_PlayerDeath );
-	HookEvent( "teamplay_round_start", E_RoundStart );
-	HookEvent( "post_inventory_application", E_PostInventoryApplication );
-	HookEvent( "player_builtobject", E_BuildObject, EventHookMode_Pre );
 	
 	// translations
 	LoadTranslations("hideandseek.phrases");
@@ -153,6 +146,8 @@ public void OnPluginStart()
 	sm_has_freeze_duration = CreateConVar( "sm_has_freeze_duration", "15.0", "How long are BLU players frozen on round start?", FCVAR_NONE, true, 0.1, true, 60.0 );
 	sm_has_rt_kill_reduction = CreateConVar( "sm_has_rt_kill_reduction", "15", "How many seconds to reduce from the round duration when a BLU player is killed by a RED player? 0 = Disabled", FCVAR_NONE, true, 0.0, true, 60.0 );
 	sm_has_blu_ratio = CreateConVar( "sm_has_blu_ratio", "4", "BLU Player ratio. 1 every N RED. N is this cvar value.", FCVAR_NONE, true, 2.0, true, 31.0);
+	sm_has_enabled = CreateConVar( "sm_has_enabled", "1", "Is the plugin enabled? Map change is required.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	sm_has_enabled.AddChangeHook(OnEnableCvarChanged);
 	
 	sm_has_round_time = FindConVar("sm_has_round_time");
 	if (sm_has_round_time != null)
@@ -209,21 +204,12 @@ public void OnLibraryAdded(const char[] name)
 {
 	if(StrEqual(name, "SteamWorks", false))
 	{
-		SteamWorks_SetGameDescription("Hide and Seek");
+		SteamWorks_SetGameDescription("Simple Hide and Seek");
 	}
 }
 
 public void OnMapStart()
-{
-	if(LibraryExists("SteamWorks"))
-		SteamWorks_SetGameDescription("Hide and Seek");
-		
-	SP_LoadConfig();
-	MS_LoadConfig();
-	g_iPSState = 0; // state 0, nobody joined BLU
-	g_iHASState = HAS_State_NONE;
-	AddPluginTag("HAS");
-	
+{	
 	// Precache
 	// game sounds
 	PrecacheScriptSound("Announcer.AM_LastManAlive01");
@@ -235,6 +221,36 @@ public void OnMapStart()
 	PrecacheSound("vo/announcer_ends_60sec.mp3");
 	PrecacheSound("vo/announcer_ends_30sec.mp3");
 	PrecacheSound("vo/announcer_ends_10sec.mp3");
+	
+	if(sm_has_enabled.BoolValue)
+	{
+		if(LibraryExists("SteamWorks"))
+			SteamWorks_SetGameDescription("Simple Hide and Seek");
+			
+		SP_LoadConfig();
+		MS_LoadConfig();
+		g_iPSState = 0; // state 0, nobody joined BLU
+		g_iHASState = HAS_State_NONE;
+		AddPluginTag("HAS");
+	
+		HookEvent( "player_spawn", E_PlayerSpawn );
+		HookEvent( "player_death", E_PlayerDeath );
+		HookEvent( "teamplay_round_start", E_RoundStart );
+		HookEvent( "post_inventory_application", E_PostInventoryApplication );
+		HookEvent( "player_builtobject", E_BuildObject, EventHookMode_Pre );
+	}
+}
+
+public void OnMapEnd()
+{
+	if(sm_has_enabled.BoolValue)
+	{
+		UnhookEvent( "player_spawn", E_PlayerSpawn );
+		UnhookEvent( "player_death", E_PlayerDeath );
+		UnhookEvent( "teamplay_round_start", E_RoundStart );
+		UnhookEvent( "post_inventory_application", E_PostInventoryApplication );
+		UnhookEvent( "player_builtobject", E_BuildObject, EventHookMode_Pre );
+	}
 }
 
 public void TF2_OnWaitingForPlayersStart() {
@@ -247,22 +263,21 @@ public void TF2_OnWaitingForPlayersEnd() {
 	LogMessage("TF2 Waiting For Players ended.");
 }
 
-public void OnGameFrame() {
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if( IsValidClient(i) && g_iHASState == HAS_State_ACTIVE )
-		{
-			if( IsPlayerAlive(i) && TF2_GetClientTeam(i) == TFTeam_Red && TF2_IsPlayerInCondition(i, TFCond_DefenseBuffed) )
-			{
-				TF2_AddCondition(i, TFCond_UberchargedCanteen, 0.100);
-			}
-		}
-	}	
-}
-
 /****************************************************
 				CONVAR FUNCTIONS
 *****************************************************/
+
+public void OnEnableCvarChanged(ConVar convar, char[] oldValue, char[] newValue)
+{
+	if(!sm_has_enabled.BoolValue)
+	{
+		UnhookEvent( "player_spawn", E_PlayerSpawn );
+		UnhookEvent( "player_death", E_PlayerDeath );
+		UnhookEvent( "teamplay_round_start", E_RoundStart );
+		UnhookEvent( "post_inventory_application", E_PostInventoryApplication );
+		UnhookEvent( "player_builtobject", E_BuildObject, EventHookMode_Pre );
+	}
+}
 
 public void OnTimeConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
@@ -286,31 +301,43 @@ public void OnRTKRConVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 
 public void OnScrambleTeamChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
-	if (StringToInt(newValue) != 0)
+	if(sm_has_enabled.BoolValue)
 	{
-		convar.IntValue = 0;
+		if (StringToInt(newValue) != 0)
+		{
+			convar.IntValue = 0;
+		}
 	}
 }
 
 public void OnAutoTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
-	if (StringToInt(newValue) != 0)
+	if(sm_has_enabled.BoolValue)
 	{
-		convar.IntValue = 0;
+		if (StringToInt(newValue) != 0)
+		{
+			convar.IntValue = 0;
+		}
 	}
 }
 
 public void OnTeamBalanceChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
-	if (StringToInt(newValue) != 0)
+	if(sm_has_enabled.BoolValue)
 	{
-		convar.IntValue = 0;
+		if (StringToInt(newValue) != 0)
+		{
+			convar.IntValue = 0;
+		}
 	}
 }
 
 public void OnTagsChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
-	AddPluginTag("HAS");
+	if(sm_has_enabled.BoolValue)
+	{
+		AddPluginTag("SHAS");
+	}
 }
 
 /****************************************************
@@ -320,6 +347,8 @@ public void OnTagsChanged(ConVar convar, char[] oldValue, char[] newValue)
 // Commands
 public Action command_suicide(int client, const char[] command, int argc)
 {
+	if(!sm_has_enabled.BoolValue) { return Plugin_Continue; }
+	
 	if(g_iHASState == HAS_State_ACTIVE)
 	{
 		LogAction(client, -1, "Player %L attempted to suicide while the round was active.", client);
@@ -353,6 +382,12 @@ public Action Command_Debug(int client, int args)
 	char gamestate[64];
 	
 	ReplyToCommand(client, "===Hide and Seek Debug===");
+	
+	if(!sm_has_enabled.BoolValue)
+	{
+		ReplyToCommand(client, "Plugin disabled!");
+		return Plugin_Handled;
+	}
 	
 	switch( g_iHASState )
 	{
@@ -398,6 +433,8 @@ public Action Command_Debug(int client, int args)
 			}
 		}
 	}
+	
+	return Plugin_Handled;
 }
 
 /****************************************************
@@ -723,7 +760,7 @@ public Action Timer_Announce(Handle timer)
 	}
 	else if(msg == 2)
 	{
-		CPrintToChatAll("%t", "Plugin Version", PLUGIN_VERSION, PLUGIN_STATE);
+		CPrintToChatAll("%t", "Plugin Version", PLUGIN_VERSION);
 	}
 	else if(msg == 3)
 	{
@@ -1087,27 +1124,6 @@ int GetRunningTime()
 		return -1;
 	}
 }
-/****************************************************
-				WEAPON FUNCTIONS
-*****************************************************/
-
-// stun players when they get jarated
-public TF2_OnConditionAdded(int client, TFCond cond)
-{
-	if(GetClientTeam(client) == view_as<int>(TFTeam_Blue) && g_iHASState == HAS_State_ACTIVE && cond == TFCond_Jarated)
-	{
-		TF2_StunPlayer(client, 8.0, 0.8, TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_SOUND);
-	}
-}
-
-/* public TF2_OnConditionRemoved(client, TFCond:cond)
-{
-	// is RED, finished taunt and is soldier
-    if (GetClientTeam(client) == _:TFTeam_Red && cond == TFCond_Taunting && GetEntProp(client, Prop_Send, "m_iClass") == 3)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
-    }
-} */
 
 // add plugin tag to sv_tags
 void AddPluginTag(const char[] tag)
@@ -1121,5 +1137,19 @@ void AddPluginTag(const char[] tag)
 		Format(newTags, sizeof(newTags), "%s,%s", tags, tag);
 		c_svTag.SetString(newTags, _, true);
 		c_svTag.GetString(tags, sizeof(tags));
+	}
+}
+
+void IsLastRED()
+{
+	if( GetTeamClientCount(view_as<int>(TFTeam_Red)) == 1 )
+	{
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if( IsClientInGame(i) && TF2_GetClientTeam(i) == TFTeam_Red )
+			{
+				EmitGameSoundToClient(i, "Announcer.AM_LastManAlive01");
+			}
+		}
 	}
 }

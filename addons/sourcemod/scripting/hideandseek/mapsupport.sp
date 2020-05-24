@@ -26,22 +26,16 @@ void MS_LoadConfig()
 	KeyValues kv = new KeyValues("MapSettings");
 	kv.ImportFromFile(MapSupportFile);
 	
-	// Jump into the first subsection
-	if (!kv.GotoFirstSubKey())
-	{
-		delete kv;
-	}
-	
 	// Iterate over subsections at the same nesting level
 	char buffer[255];
-	do
+	if(kv.JumpToKey(CurrentMap, false))
 	{
 		kv.GetSectionName(buffer, sizeof(buffer));
 		if (StrEqual(buffer, CurrentMap))
 		{
 			iRemoveDoors = kv.GetNum("deletealldoors", 0);
 		}
-	} while (kv.GotoNextKey());
+	}
 	
 	delete kv;
 }
@@ -60,7 +54,7 @@ void PrepareMap() {
 	{
 		if(IsValidEntity(i))
 		{
-			AcceptEntityInput(i, "Kill");
+			AcceptEntityInput(i, "KillHierarchy");
 		} 
 	}
 	while ((i = FindEntityByClassname(i, "func_capturezone")) != -1)
@@ -100,14 +94,14 @@ void PrepareMap() {
 	{
 		if(IsValidEntity(i))
 		{
-			AcceptEntityInput(i, "Kill");
+			AcceptEntityInput(i, "KillHierarchy");
 		} 
 	}
 	while ((i = FindEntityByClassname(i, "func_regenerate")) != -1)
 	{
 		if(IsValidEntity(i) && GetEntProp(i, Prop_Send, "m_iTeamNum") == 2) // func_regenerate belongs to RED team.
 		{
-			AcceptEntityInput(i, "Kill");
+			AcceptEntityInput(i, "KillHierarchy");
 		} 
 	}
 	if(iRemoveDoors == 1)

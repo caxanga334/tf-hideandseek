@@ -37,48 +37,39 @@ void SP_LoadConfig()
 	KeyValues kv = new KeyValues("SpawnPoints");
 	kv.ImportFromFile(g_strConfigFile);
 	
-	// Jump into the first subsection
-	if (!kv.GotoFirstSubKey())
-	{
-		delete kv;
-	}
-	
 	// Iterate over subsections at the same nesting level
 	char buffer[255];
-	do
+	if(kv.JumpToKey(CurrentMap, false))
 	{
 		kv.GetSectionName(buffer, sizeof(buffer));
-		if (StrEqual(buffer, CurrentMap))
+		LogMessage("Found SpawnPoints. Map: %s Buffer: %s", CurrentMap, buffer);
+		// RED
+		if(kv.JumpToKey("red", false))
 		{
-			LogMessage("Found SpawnPoints. Map: %s Buffer: %s", CurrentMap, buffer);
-			// RED
-			if(kv.JumpToKey("red", false))
+			iMaxREDSP = kv.GetNum("max");
+			bSpawnPointsRED = true;
+			for (int i = 1; i <= iMaxREDSP; i++)
 			{
-				iMaxREDSP = kv.GetNum("max");
-				bSpawnPointsRED = true;
-				for (int i = 1; i <= iMaxREDSP; i++)
-				{
-					Format(CfgOrigin, sizeof(CfgOrigin), "origin%i", i);
-					kv.GetVector(CfgOrigin, Origin);
-					array_redspawns.PushArray(Origin);
-				}
-				kv.GoBack();
+				Format(CfgOrigin, sizeof(CfgOrigin), "origin%i", i);
+				kv.GetVector(CfgOrigin, Origin);
+				array_redspawns.PushArray(Origin);
 			}
-			// BLU
-			if(kv.JumpToKey("blue", false))
-			{
-				iMaxBLUSP = kv.GetNum("max");
-				bSpawnPointsBLU = true;
-				for (int i = 1; i <= iMaxBLUSP; i++)
-				{
-					Format(CfgOrigin, sizeof(CfgOrigin), "origin%i", i);
-					kv.GetVector(CfgOrigin, Origin);
-					array_bluspawns.PushArray(Origin);
-				}
-				kv.GoBack();
-			}
+			kv.GoBack();
 		}
-	} while (kv.GotoNextKey());
+		// BLU
+		if(kv.JumpToKey("blue", false))
+		{
+			iMaxBLUSP = kv.GetNum("max");
+			bSpawnPointsBLU = true;
+			for (int i = 1; i <= iMaxBLUSP; i++)
+			{
+				Format(CfgOrigin, sizeof(CfgOrigin), "origin%i", i);
+				kv.GetVector(CfgOrigin, Origin);
+				array_bluspawns.PushArray(Origin);
+			}
+			kv.GoBack();
+		}
+	}
 	
 	delete kv;
 }

@@ -4,8 +4,8 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/caxanga334/tf-hideandseek)
 ![GitHub All Releases](https://img.shields.io/github/downloads/caxanga334/tf-hideandseek/total)
 
-# Hide and Seek
-Hide and Seek is a sourcemod plugin for Team Fortress 2
+# Simple Hide and Seek
+Simple Hide and Seek is a sourcemod plugin for Team Fortress 2
 
 ## How it Works
 RED Team will hide while the BLU team will seek. RED players have limited weapons, some classes have special abilities (WIP).
@@ -21,11 +21,6 @@ RED Team will hide while the BLU team will seek. RED players have limited weapon
 * Unsupported Maps: MVM,ARENA,TRAINING,RD
 * Miscellaneous maps should be supported (Example: trade maps)
 * Maps from other community made game modes is unsupported.
-
-## Features (Work-in-Progress)
-* Special Abilities for RED team
-
-## Features (Planned)
 * Enable/Disable convar
 
 # Dependencies

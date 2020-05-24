@@ -53,8 +53,8 @@
 	}
 	"Plugin Version"
 	{
-		"#format"	"{1:s},{2:s}"
-		"ru"	"{aqua}Вы играете в Hide and Seek версии {1} {2}"
+		"#format"	"{1:s}"
+		"ru"	"{aqua}Вы играете в Hide and Seek версии {1}"
 	}
 	"BLU Frozen"
 	{
