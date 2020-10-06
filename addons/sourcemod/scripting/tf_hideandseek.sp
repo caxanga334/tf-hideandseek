@@ -739,7 +739,7 @@ void EndRound(int iWinner)
 	}
 	if(iMVP > 0 && IsClientInGame(iPlayer)) // oh look someone died
 	{
-		decl String:MVPPlayerName[MAX_NAME_LENGTH];
+		char MVPPlayerName[MAX_NAME_LENGTH];
 		GetClientName(iPlayer, MVPPlayerName, sizeof(MVPPlayerName));
 		CPrintToChatAll("%t", "Round MVP", MVPPlayerName, iMVP);
 		LogMessage("Hide and Seek round ended. BLU MVP was: %L", iPlayer);
